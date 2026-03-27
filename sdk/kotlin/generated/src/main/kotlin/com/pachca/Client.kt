@@ -14,11 +14,8 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-class SecurityService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun getAuditEvents(
+abstract class SecurityService {
+    open suspend fun getAuditEvents(
         startTime: String? = null,
         endTime: String? = null,
         eventKey: AuditEventKey? = null,
@@ -28,6 +25,38 @@ class SecurityService internal constructor(
         entityType: String? = null,
         limit: Int? = null,
         cursor: String? = null,
+    ): GetAuditEventsResponse {
+        throw NotImplementedError("Security.getAuditEvents is not implemented")
+    }
+
+    open suspend fun getAuditEventsAll(
+        startTime: String? = null,
+        endTime: String? = null,
+        eventKey: AuditEventKey? = null,
+        actorId: String? = null,
+        actorType: String? = null,
+        entityId: String? = null,
+        entityType: String? = null,
+        limit: Int? = null,
+    ): List<AuditEvent> {
+        throw NotImplementedError("Security.getAuditEventsAll is not implemented")
+    }
+}
+
+class SecurityServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : SecurityService() {
+    override suspend fun getAuditEvents(
+        startTime: String?,
+        endTime: String?,
+        eventKey: AuditEventKey?,
+        actorId: String?,
+        actorType: String?,
+        entityId: String?,
+        entityType: String?,
+        limit: Int?,
+        cursor: String?,
     ): GetAuditEventsResponse {
         val response = client.get("$baseUrl/audit_events") {
             startTime?.let { parameter("start_time", it) }
@@ -47,15 +76,15 @@ class SecurityService internal constructor(
         }
     }
 
-    suspend fun getAuditEventsAll(
-        startTime: String? = null,
-        endTime: String? = null,
-        eventKey: AuditEventKey? = null,
-        actorId: String? = null,
-        actorType: String? = null,
-        entityId: String? = null,
-        entityType: String? = null,
-        limit: Int? = null,
+    override suspend fun getAuditEventsAll(
+        startTime: String?,
+        endTime: String?,
+        eventKey: AuditEventKey?,
+        actorId: String?,
+        actorType: String?,
+        entityId: String?,
+        entityType: String?,
+        limit: Int?,
     ): List<AuditEvent> {
         val items = mutableListOf<AuditEvent>()
         var cursor: String? = null
@@ -78,11 +107,29 @@ class SecurityService internal constructor(
     }
 }
 
-class BotsService internal constructor(
+abstract class BotsService {
+    open suspend fun getWebhookEvents(limit: Int? = null, cursor: String? = null): GetWebhookEventsResponse {
+        throw NotImplementedError("Bots.getWebhookEvents is not implemented")
+    }
+
+    open suspend fun getWebhookEventsAll(limit: Int? = null): List<WebhookEvent> {
+        throw NotImplementedError("Bots.getWebhookEventsAll is not implemented")
+    }
+
+    open suspend fun updateBot(id: Int, request: BotUpdateRequest): BotResponse {
+        throw NotImplementedError("Bots.updateBot is not implemented")
+    }
+
+    open suspend fun deleteWebhookEvent(id: String) {
+        throw NotImplementedError("Bots.deleteWebhookEvent is not implemented")
+    }
+}
+
+class BotsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun getWebhookEvents(limit: Int? = null, cursor: String? = null): GetWebhookEventsResponse {
+) : BotsService() {
+    override suspend fun getWebhookEvents(limit: Int?, cursor: String?): GetWebhookEventsResponse {
         val response = client.get("$baseUrl/webhooks/events") {
             limit?.let { parameter("limit", it) }
             cursor?.let { parameter("cursor", it) }
@@ -94,7 +141,7 @@ class BotsService internal constructor(
         }
     }
 
-    suspend fun getWebhookEventsAll(limit: Int? = null): List<WebhookEvent> {
+    override suspend fun getWebhookEventsAll(limit: Int?): List<WebhookEvent> {
         val items = mutableListOf<WebhookEvent>()
         var cursor: String? = null
         do {
@@ -105,7 +152,7 @@ class BotsService internal constructor(
         return items
     }
 
-    suspend fun updateBot(id: Int, request: BotUpdateRequest): BotResponse {
+    override suspend fun updateBot(id: Int, request: BotUpdateRequest): BotResponse {
         val response = client.put("$baseUrl/bots/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -117,7 +164,7 @@ class BotsService internal constructor(
         }
     }
 
-    suspend fun deleteWebhookEvent(id: String) {
+    override suspend fun deleteWebhookEvent(id: String) {
         val response = client.delete("$baseUrl/webhooks/events/$id")
         when (response.status.value) {
             204 -> return
@@ -127,11 +174,8 @@ class BotsService internal constructor(
     }
 }
 
-class ChatsService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listChats(
+abstract class ChatsService {
+    open suspend fun listChats(
         sortId: SortOrder? = null,
         availability: ChatAvailability? = null,
         lastMessageAtAfter: String? = null,
@@ -139,6 +183,54 @@ class ChatsService internal constructor(
         personal: Boolean? = null,
         limit: Int? = null,
         cursor: String? = null,
+    ): ListChatsResponse {
+        throw NotImplementedError("Chats.listChats is not implemented")
+    }
+
+    open suspend fun listChatsAll(
+        sortId: SortOrder? = null,
+        availability: ChatAvailability? = null,
+        lastMessageAtAfter: String? = null,
+        lastMessageAtBefore: String? = null,
+        personal: Boolean? = null,
+        limit: Int? = null,
+    ): List<Chat> {
+        throw NotImplementedError("Chats.listChatsAll is not implemented")
+    }
+
+    open suspend fun getChat(id: Int): Chat {
+        throw NotImplementedError("Chats.getChat is not implemented")
+    }
+
+    open suspend fun createChat(request: ChatCreateRequest): Chat {
+        throw NotImplementedError("Chats.createChat is not implemented")
+    }
+
+    open suspend fun updateChat(id: Int, request: ChatUpdateRequest): Chat {
+        throw NotImplementedError("Chats.updateChat is not implemented")
+    }
+
+    open suspend fun archiveChat(id: Int) {
+        throw NotImplementedError("Chats.archiveChat is not implemented")
+    }
+
+    open suspend fun unarchiveChat(id: Int) {
+        throw NotImplementedError("Chats.unarchiveChat is not implemented")
+    }
+}
+
+class ChatsServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : ChatsService() {
+    override suspend fun listChats(
+        sortId: SortOrder?,
+        availability: ChatAvailability?,
+        lastMessageAtAfter: String?,
+        lastMessageAtBefore: String?,
+        personal: Boolean?,
+        limit: Int?,
+        cursor: String?,
     ): ListChatsResponse {
         val response = client.get("$baseUrl/chats") {
             sortId?.let { parameter("sort[{field}]", it.value) }
@@ -156,13 +248,13 @@ class ChatsService internal constructor(
         }
     }
 
-    suspend fun listChatsAll(
-        sortId: SortOrder? = null,
-        availability: ChatAvailability? = null,
-        lastMessageAtAfter: String? = null,
-        lastMessageAtBefore: String? = null,
-        personal: Boolean? = null,
-        limit: Int? = null,
+    override suspend fun listChatsAll(
+        sortId: SortOrder?,
+        availability: ChatAvailability?,
+        lastMessageAtAfter: String?,
+        lastMessageAtBefore: String?,
+        personal: Boolean?,
+        limit: Int?,
     ): List<Chat> {
         val items = mutableListOf<Chat>()
         var cursor: String? = null
@@ -182,7 +274,7 @@ class ChatsService internal constructor(
         return items
     }
 
-    suspend fun getChat(id: Int): Chat {
+    override suspend fun getChat(id: Int): Chat {
         val response = client.get("$baseUrl/chats/$id")
         return when (response.status.value) {
             200 -> response.body<ChatDataWrapper>().data
@@ -191,7 +283,7 @@ class ChatsService internal constructor(
         }
     }
 
-    suspend fun createChat(request: ChatCreateRequest): Chat {
+    override suspend fun createChat(request: ChatCreateRequest): Chat {
         val response = client.post("$baseUrl/chats") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -203,7 +295,7 @@ class ChatsService internal constructor(
         }
     }
 
-    suspend fun updateChat(id: Int, request: ChatUpdateRequest): Chat {
+    override suspend fun updateChat(id: Int, request: ChatUpdateRequest): Chat {
         val response = client.put("$baseUrl/chats/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -215,7 +307,7 @@ class ChatsService internal constructor(
         }
     }
 
-    suspend fun archiveChat(id: Int) {
+    override suspend fun archiveChat(id: Int) {
         val response = client.put("$baseUrl/chats/$id/archive")
         when (response.status.value) {
             204 -> return
@@ -224,7 +316,7 @@ class ChatsService internal constructor(
         }
     }
 
-    suspend fun unarchiveChat(id: Int) {
+    override suspend fun unarchiveChat(id: Int) {
         val response = client.put("$baseUrl/chats/$id/unarchive")
         when (response.status.value) {
             204 -> return
@@ -234,11 +326,33 @@ class ChatsService internal constructor(
     }
 }
 
-class CommonService internal constructor(
+abstract class CommonService {
+    open suspend fun downloadExport(id: Int): String {
+        throw NotImplementedError("Common.downloadExport is not implemented")
+    }
+
+    open suspend fun listProperties(entityType: SearchEntityType): ListPropertiesResponse {
+        throw NotImplementedError("Common.listProperties is not implemented")
+    }
+
+    open suspend fun requestExport(request: ExportRequest) {
+        throw NotImplementedError("Common.requestExport is not implemented")
+    }
+
+    open suspend fun uploadFile(directUrl: String, request: FileUploadRequest) {
+        throw NotImplementedError("Common.uploadFile is not implemented")
+    }
+
+    open suspend fun getUploadParams(): UploadParams {
+        throw NotImplementedError("Common.getUploadParams is not implemented")
+    }
+}
+
+class CommonServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun downloadExport(id: Int): String {
+) : CommonService() {
+    override suspend fun downloadExport(id: Int): String {
         val response = client.get("$baseUrl/chats/exports/$id")
         return when (response.status.value) {
             302 -> response.headers[HttpHeaders.Location]
@@ -248,7 +362,7 @@ class CommonService internal constructor(
         }
     }
 
-    suspend fun listProperties(entityType: SearchEntityType): ListPropertiesResponse {
+    override suspend fun listProperties(entityType: SearchEntityType): ListPropertiesResponse {
         val response = client.get("$baseUrl/custom_properties") {
             parameter("entity_type", entityType.value)
         }
@@ -259,7 +373,7 @@ class CommonService internal constructor(
         }
     }
 
-    suspend fun requestExport(request: ExportRequest) {
+    override suspend fun requestExport(request: ExportRequest) {
         val response = client.post("$baseUrl/chats/exports") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -271,7 +385,7 @@ class CommonService internal constructor(
         }
     }
 
-    suspend fun uploadFile(directUrl: String, request: FileUploadRequest) {
+    override suspend fun uploadFile(directUrl: String, request: FileUploadRequest) {
         val response = client.submitFormWithBinaryData(
             directUrl,
             formData {
@@ -296,7 +410,7 @@ class CommonService internal constructor(
         }
     }
 
-    suspend fun getUploadParams(): UploadParams {
+    override suspend fun getUploadParams(): UploadParams {
         val response = client.post("$baseUrl/uploads")
         return when (response.status.value) {
             201 -> response.body()
@@ -306,15 +420,62 @@ class CommonService internal constructor(
     }
 }
 
-class MembersService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listMembers(
+abstract class MembersService {
+    open suspend fun listMembers(
         id: Int,
         role: ChatMemberRoleFilter? = null,
         limit: Int? = null,
         cursor: String? = null,
+    ): ListMembersResponse {
+        throw NotImplementedError("Members.listMembers is not implemented")
+    }
+
+    open suspend fun listMembersAll(
+        id: Int,
+        role: ChatMemberRoleFilter? = null,
+        limit: Int? = null,
+    ): List<User> {
+        throw NotImplementedError("Members.listMembersAll is not implemented")
+    }
+
+    open suspend fun addTags(id: Int, groupTagIds: List<Int>) {
+        throw NotImplementedError("Members.addTags is not implemented")
+    }
+
+    open suspend fun addMembers(id: Int, request: AddMembersRequest) {
+        throw NotImplementedError("Members.addMembers is not implemented")
+    }
+
+    open suspend fun updateMemberRole(
+        id: Int,
+        userId: Int,
+        role: ChatMemberRole,
+    ) {
+        throw NotImplementedError("Members.updateMemberRole is not implemented")
+    }
+
+    open suspend fun removeTag(id: Int, tagId: Int) {
+        throw NotImplementedError("Members.removeTag is not implemented")
+    }
+
+    open suspend fun leaveChat(id: Int) {
+        throw NotImplementedError("Members.leaveChat is not implemented")
+    }
+
+    open suspend fun removeMember(id: Int, userId: Int) {
+        throw NotImplementedError("Members.removeMember is not implemented")
+    }
+}
+
+class MembersServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : MembersService() {
+    override suspend fun listMembers(
+        id: Int,
+        role: ChatMemberRoleFilter?,
+        limit: Int?,
+        cursor: String?,
     ): ListMembersResponse {
         val response = client.get("$baseUrl/chats/$id/members") {
             role?.let { parameter("role", it.value) }
@@ -328,10 +489,10 @@ class MembersService internal constructor(
         }
     }
 
-    suspend fun listMembersAll(
+    override suspend fun listMembersAll(
         id: Int,
-        role: ChatMemberRoleFilter? = null,
-        limit: Int? = null,
+        role: ChatMemberRoleFilter?,
+        limit: Int?,
     ): List<User> {
         val items = mutableListOf<User>()
         var cursor: String? = null
@@ -348,7 +509,7 @@ class MembersService internal constructor(
         return items
     }
 
-    suspend fun addTags(id: Int, groupTagIds: List<Int>) {
+    override suspend fun addTags(id: Int, groupTagIds: List<Int>) {
         val response = client.post("$baseUrl/chats/$id/group_tags") {
             contentType(ContentType.Application.Json)
             setBody(AddTagsRequest(groupTagIds = groupTagIds))
@@ -360,7 +521,7 @@ class MembersService internal constructor(
         }
     }
 
-    suspend fun addMembers(id: Int, request: AddMembersRequest) {
+    override suspend fun addMembers(id: Int, request: AddMembersRequest) {
         val response = client.post("$baseUrl/chats/$id/members") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -372,7 +533,7 @@ class MembersService internal constructor(
         }
     }
 
-    suspend fun updateMemberRole(
+    override suspend fun updateMemberRole(
         id: Int,
         userId: Int,
         role: ChatMemberRole,
@@ -388,7 +549,7 @@ class MembersService internal constructor(
         }
     }
 
-    suspend fun removeTag(id: Int, tagId: Int) {
+    override suspend fun removeTag(id: Int, tagId: Int) {
         val response = client.delete("$baseUrl/chats/$id/group_tags/$tagId")
         when (response.status.value) {
             204 -> return
@@ -397,7 +558,7 @@ class MembersService internal constructor(
         }
     }
 
-    suspend fun leaveChat(id: Int) {
+    override suspend fun leaveChat(id: Int) {
         val response = client.delete("$baseUrl/chats/$id/leave")
         when (response.status.value) {
             204 -> return
@@ -406,7 +567,7 @@ class MembersService internal constructor(
         }
     }
 
-    suspend fun removeMember(id: Int, userId: Int) {
+    override suspend fun removeMember(id: Int, userId: Int) {
         val response = client.delete("$baseUrl/chats/$id/members/$userId")
         when (response.status.value) {
             204 -> return
@@ -416,14 +577,56 @@ class MembersService internal constructor(
     }
 }
 
-class GroupTagsService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listTags(
+abstract class GroupTagsService {
+    open suspend fun listTags(
         names: TagNamesFilter? = null,
         limit: Int? = null,
         cursor: String? = null,
+    ): ListTagsResponse {
+        throw NotImplementedError("Group tags.listTags is not implemented")
+    }
+
+    open suspend fun listTagsAll(names: TagNamesFilter? = null, limit: Int? = null): List<GroupTag> {
+        throw NotImplementedError("Group tags.listTagsAll is not implemented")
+    }
+
+    open suspend fun getTag(id: Int): GroupTag {
+        throw NotImplementedError("Group tags.getTag is not implemented")
+    }
+
+    open suspend fun getTagUsers(
+        id: Int,
+        limit: Int? = null,
+        cursor: String? = null,
+    ): ListMembersResponse {
+        throw NotImplementedError("Group tags.getTagUsers is not implemented")
+    }
+
+    open suspend fun getTagUsersAll(id: Int, limit: Int? = null): List<User> {
+        throw NotImplementedError("Group tags.getTagUsersAll is not implemented")
+    }
+
+    open suspend fun createTag(request: GroupTagRequest): GroupTag {
+        throw NotImplementedError("Group tags.createTag is not implemented")
+    }
+
+    open suspend fun updateTag(id: Int, request: GroupTagRequest): GroupTag {
+        throw NotImplementedError("Group tags.updateTag is not implemented")
+    }
+
+    open suspend fun deleteTag(id: Int) {
+        throw NotImplementedError("Group tags.deleteTag is not implemented")
+    }
+}
+
+class GroupTagsServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : GroupTagsService() {
+    override suspend fun listTags(
+        names: TagNamesFilter?,
+        limit: Int?,
+        cursor: String?,
     ): ListTagsResponse {
         val response = client.get("$baseUrl/group_tags") {
             names?.let { parameter("names", it) }
@@ -437,7 +640,7 @@ class GroupTagsService internal constructor(
         }
     }
 
-    suspend fun listTagsAll(names: TagNamesFilter? = null, limit: Int? = null): List<GroupTag> {
+    override suspend fun listTagsAll(names: TagNamesFilter?, limit: Int?): List<GroupTag> {
         val items = mutableListOf<GroupTag>()
         var cursor: String? = null
         do {
@@ -448,7 +651,7 @@ class GroupTagsService internal constructor(
         return items
     }
 
-    suspend fun getTag(id: Int): GroupTag {
+    override suspend fun getTag(id: Int): GroupTag {
         val response = client.get("$baseUrl/group_tags/$id")
         return when (response.status.value) {
             200 -> response.body<GroupTagDataWrapper>().data
@@ -457,10 +660,10 @@ class GroupTagsService internal constructor(
         }
     }
 
-    suspend fun getTagUsers(
+    override suspend fun getTagUsers(
         id: Int,
-        limit: Int? = null,
-        cursor: String? = null,
+        limit: Int?,
+        cursor: String?,
     ): ListMembersResponse {
         val response = client.get("$baseUrl/group_tags/$id/users") {
             limit?.let { parameter("limit", it) }
@@ -473,7 +676,7 @@ class GroupTagsService internal constructor(
         }
     }
 
-    suspend fun getTagUsersAll(id: Int, limit: Int? = null): List<User> {
+    override suspend fun getTagUsersAll(id: Int, limit: Int?): List<User> {
         val items = mutableListOf<User>()
         var cursor: String? = null
         do {
@@ -484,7 +687,7 @@ class GroupTagsService internal constructor(
         return items
     }
 
-    suspend fun createTag(request: GroupTagRequest): GroupTag {
+    override suspend fun createTag(request: GroupTagRequest): GroupTag {
         val response = client.post("$baseUrl/group_tags") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -496,7 +699,7 @@ class GroupTagsService internal constructor(
         }
     }
 
-    suspend fun updateTag(id: Int, request: GroupTagRequest): GroupTag {
+    override suspend fun updateTag(id: Int, request: GroupTagRequest): GroupTag {
         val response = client.put("$baseUrl/group_tags/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -508,7 +711,7 @@ class GroupTagsService internal constructor(
         }
     }
 
-    suspend fun deleteTag(id: Int) {
+    override suspend fun deleteTag(id: Int) {
         val response = client.delete("$baseUrl/group_tags/$id")
         when (response.status.value) {
             204 -> return
@@ -518,15 +721,58 @@ class GroupTagsService internal constructor(
     }
 }
 
-class MessagesService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listChatMessages(
+abstract class MessagesService {
+    open suspend fun listChatMessages(
         chatId: Int,
         sortId: SortOrder? = null,
         limit: Int? = null,
         cursor: String? = null,
+    ): ListChatMessagesResponse {
+        throw NotImplementedError("Messages.listChatMessages is not implemented")
+    }
+
+    open suspend fun listChatMessagesAll(
+        chatId: Int,
+        sortId: SortOrder? = null,
+        limit: Int? = null,
+    ): List<Message> {
+        throw NotImplementedError("Messages.listChatMessagesAll is not implemented")
+    }
+
+    open suspend fun getMessage(id: Int): Message {
+        throw NotImplementedError("Messages.getMessage is not implemented")
+    }
+
+    open suspend fun createMessage(request: MessageCreateRequest): Message {
+        throw NotImplementedError("Messages.createMessage is not implemented")
+    }
+
+    open suspend fun pinMessage(id: Int) {
+        throw NotImplementedError("Messages.pinMessage is not implemented")
+    }
+
+    open suspend fun updateMessage(id: Int, request: MessageUpdateRequest): Message {
+        throw NotImplementedError("Messages.updateMessage is not implemented")
+    }
+
+    open suspend fun deleteMessage(id: Int) {
+        throw NotImplementedError("Messages.deleteMessage is not implemented")
+    }
+
+    open suspend fun unpinMessage(id: Int) {
+        throw NotImplementedError("Messages.unpinMessage is not implemented")
+    }
+}
+
+class MessagesServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : MessagesService() {
+    override suspend fun listChatMessages(
+        chatId: Int,
+        sortId: SortOrder?,
+        limit: Int?,
+        cursor: String?,
     ): ListChatMessagesResponse {
         val response = client.get("$baseUrl/messages") {
             parameter("chat_id", chatId)
@@ -541,10 +787,10 @@ class MessagesService internal constructor(
         }
     }
 
-    suspend fun listChatMessagesAll(
+    override suspend fun listChatMessagesAll(
         chatId: Int,
-        sortId: SortOrder? = null,
-        limit: Int? = null,
+        sortId: SortOrder?,
+        limit: Int?,
     ): List<Message> {
         val items = mutableListOf<Message>()
         var cursor: String? = null
@@ -561,7 +807,7 @@ class MessagesService internal constructor(
         return items
     }
 
-    suspend fun getMessage(id: Int): Message {
+    override suspend fun getMessage(id: Int): Message {
         val response = client.get("$baseUrl/messages/$id")
         return when (response.status.value) {
             200 -> response.body<MessageDataWrapper>().data
@@ -570,7 +816,7 @@ class MessagesService internal constructor(
         }
     }
 
-    suspend fun createMessage(request: MessageCreateRequest): Message {
+    override suspend fun createMessage(request: MessageCreateRequest): Message {
         val response = client.post("$baseUrl/messages") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -582,7 +828,7 @@ class MessagesService internal constructor(
         }
     }
 
-    suspend fun pinMessage(id: Int) {
+    override suspend fun pinMessage(id: Int) {
         val response = client.post("$baseUrl/messages/$id/pin")
         when (response.status.value) {
             204 -> return
@@ -591,7 +837,7 @@ class MessagesService internal constructor(
         }
     }
 
-    suspend fun updateMessage(id: Int, request: MessageUpdateRequest): Message {
+    override suspend fun updateMessage(id: Int, request: MessageUpdateRequest): Message {
         val response = client.put("$baseUrl/messages/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -603,7 +849,7 @@ class MessagesService internal constructor(
         }
     }
 
-    suspend fun deleteMessage(id: Int) {
+    override suspend fun deleteMessage(id: Int) {
         val response = client.delete("$baseUrl/messages/$id")
         when (response.status.value) {
             204 -> return
@@ -612,7 +858,7 @@ class MessagesService internal constructor(
         }
     }
 
-    suspend fun unpinMessage(id: Int) {
+    override suspend fun unpinMessage(id: Int) {
         val response = client.delete("$baseUrl/messages/$id/pin")
         when (response.status.value) {
             204 -> return
@@ -622,11 +868,17 @@ class MessagesService internal constructor(
     }
 }
 
-class LinkPreviewsService internal constructor(
+abstract class LinkPreviewsService {
+    open suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) {
+        throw NotImplementedError("Link Previews.createLinkPreviews is not implemented")
+    }
+}
+
+class LinkPreviewsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) {
+) : LinkPreviewsService() {
+    override suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) {
         val response = client.post("$baseUrl/messages/$id/link_previews") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -639,14 +891,40 @@ class LinkPreviewsService internal constructor(
     }
 }
 
-class ReactionsService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listReactions(
+abstract class ReactionsService {
+    open suspend fun listReactions(
         id: Int,
         limit: Int? = null,
         cursor: String? = null,
+    ): ListReactionsResponse {
+        throw NotImplementedError("Reactions.listReactions is not implemented")
+    }
+
+    open suspend fun listReactionsAll(id: Int, limit: Int? = null): List<Reaction> {
+        throw NotImplementedError("Reactions.listReactionsAll is not implemented")
+    }
+
+    open suspend fun addReaction(id: Int, request: ReactionRequest): Reaction {
+        throw NotImplementedError("Reactions.addReaction is not implemented")
+    }
+
+    open suspend fun removeReaction(
+        id: Int,
+        code: String,
+        name: String? = null,
+    ) {
+        throw NotImplementedError("Reactions.removeReaction is not implemented")
+    }
+}
+
+class ReactionsServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : ReactionsService() {
+    override suspend fun listReactions(
+        id: Int,
+        limit: Int?,
+        cursor: String?,
     ): ListReactionsResponse {
         val response = client.get("$baseUrl/messages/$id/reactions") {
             limit?.let { parameter("limit", it) }
@@ -659,7 +937,7 @@ class ReactionsService internal constructor(
         }
     }
 
-    suspend fun listReactionsAll(id: Int, limit: Int? = null): List<Reaction> {
+    override suspend fun listReactionsAll(id: Int, limit: Int?): List<Reaction> {
         val items = mutableListOf<Reaction>()
         var cursor: String? = null
         do {
@@ -670,7 +948,7 @@ class ReactionsService internal constructor(
         return items
     }
 
-    suspend fun addReaction(id: Int, request: ReactionRequest): Reaction {
+    override suspend fun addReaction(id: Int, request: ReactionRequest): Reaction {
         val response = client.post("$baseUrl/messages/$id/reactions") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -682,10 +960,10 @@ class ReactionsService internal constructor(
         }
     }
 
-    suspend fun removeReaction(
+    override suspend fun removeReaction(
         id: Int,
         code: String,
-        name: String? = null,
+        name: String?,
     ) {
         val response = client.delete("$baseUrl/messages/$id/reactions") {
             parameter("code", code)
@@ -699,14 +977,24 @@ class ReactionsService internal constructor(
     }
 }
 
-class ReadMembersService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listReadMembers(
+abstract class ReadMembersService {
+    open suspend fun listReadMembers(
         id: Int,
         limit: Int? = null,
         cursor: String? = null,
+    ): Any {
+        throw NotImplementedError("Read members.listReadMembers is not implemented")
+    }
+}
+
+class ReadMembersServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : ReadMembersService() {
+    override suspend fun listReadMembers(
+        id: Int,
+        limit: Int?,
+        cursor: String?,
     ): Any {
         val response = client.get("$baseUrl/messages/$id/read_member_ids") {
             limit?.let { parameter("limit", it) }
@@ -720,11 +1008,21 @@ class ReadMembersService internal constructor(
     }
 }
 
-class ThreadsService internal constructor(
+abstract class ThreadsService {
+    open suspend fun getThread(id: Int): Thread {
+        throw NotImplementedError("Threads.getThread is not implemented")
+    }
+
+    open suspend fun createThread(id: Int): Thread {
+        throw NotImplementedError("Threads.createThread is not implemented")
+    }
+}
+
+class ThreadsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun getThread(id: Int): Thread {
+) : ThreadsService() {
+    override suspend fun getThread(id: Int): Thread {
         val response = client.get("$baseUrl/threads/$id")
         return when (response.status.value) {
             200 -> response.body<ThreadDataWrapper>().data
@@ -733,7 +1031,7 @@ class ThreadsService internal constructor(
         }
     }
 
-    suspend fun createThread(id: Int): Thread {
+    override suspend fun createThread(id: Int): Thread {
         val response = client.post("$baseUrl/messages/$id/thread")
         return when (response.status.value) {
             201 -> response.body<ThreadDataWrapper>().data
@@ -743,11 +1041,33 @@ class ThreadsService internal constructor(
     }
 }
 
-class ProfileService internal constructor(
+abstract class ProfileService {
+    open suspend fun getTokenInfo(): AccessTokenInfo {
+        throw NotImplementedError("Profile.getTokenInfo is not implemented")
+    }
+
+    open suspend fun getProfile(): User {
+        throw NotImplementedError("Profile.getProfile is not implemented")
+    }
+
+    open suspend fun getStatus(): Any {
+        throw NotImplementedError("Profile.getStatus is not implemented")
+    }
+
+    open suspend fun updateStatus(request: StatusUpdateRequest): UserStatus {
+        throw NotImplementedError("Profile.updateStatus is not implemented")
+    }
+
+    open suspend fun deleteStatus() {
+        throw NotImplementedError("Profile.deleteStatus is not implemented")
+    }
+}
+
+class ProfileServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun getTokenInfo(): AccessTokenInfo {
+) : ProfileService() {
+    override suspend fun getTokenInfo(): AccessTokenInfo {
         val response = client.get("$baseUrl/oauth/token/info")
         return when (response.status.value) {
             200 -> response.body<AccessTokenInfoDataWrapper>().data
@@ -756,7 +1076,7 @@ class ProfileService internal constructor(
         }
     }
 
-    suspend fun getProfile(): User {
+    override suspend fun getProfile(): User {
         val response = client.get("$baseUrl/profile")
         return when (response.status.value) {
             200 -> response.body<UserDataWrapper>().data
@@ -765,7 +1085,7 @@ class ProfileService internal constructor(
         }
     }
 
-    suspend fun getStatus(): Any {
+    override suspend fun getStatus(): Any {
         val response = client.get("$baseUrl/profile/status")
         return when (response.status.value) {
             200 -> response.body()
@@ -774,7 +1094,7 @@ class ProfileService internal constructor(
         }
     }
 
-    suspend fun updateStatus(request: StatusUpdateRequest): UserStatus {
+    override suspend fun updateStatus(request: StatusUpdateRequest): UserStatus {
         val response = client.put("$baseUrl/profile/status") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -786,7 +1106,7 @@ class ProfileService internal constructor(
         }
     }
 
-    suspend fun deleteStatus() {
+    override suspend fun deleteStatus() {
         val response = client.delete("$baseUrl/profile/status")
         when (response.status.value) {
             204 -> return
@@ -796,11 +1116,8 @@ class ProfileService internal constructor(
     }
 }
 
-class SearchService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun searchChats(
+abstract class SearchService {
+    open suspend fun searchChats(
         query: String? = null,
         limit: Int? = null,
         cursor: String? = null,
@@ -810,6 +1127,90 @@ class SearchService internal constructor(
         active: Boolean? = null,
         chatSubtype: ChatSubtype? = null,
         personal: Boolean? = null,
+    ): ListChatsResponse {
+        throw NotImplementedError("Search.searchChats is not implemented")
+    }
+
+    open suspend fun searchChatsAll(
+        query: String? = null,
+        limit: Int? = null,
+        order: SortOrder? = null,
+        createdFrom: String? = null,
+        createdTo: String? = null,
+        active: Boolean? = null,
+        chatSubtype: ChatSubtype? = null,
+        personal: Boolean? = null,
+    ): List<Chat> {
+        throw NotImplementedError("Search.searchChatsAll is not implemented")
+    }
+
+    open suspend fun searchMessages(
+        query: String? = null,
+        limit: Int? = null,
+        cursor: String? = null,
+        order: SortOrder? = null,
+        createdFrom: String? = null,
+        createdTo: String? = null,
+        chatIds: List<Int>? = null,
+        userIds: List<Int>? = null,
+        active: Boolean? = null,
+    ): ListChatMessagesResponse {
+        throw NotImplementedError("Search.searchMessages is not implemented")
+    }
+
+    open suspend fun searchMessagesAll(
+        query: String? = null,
+        limit: Int? = null,
+        order: SortOrder? = null,
+        createdFrom: String? = null,
+        createdTo: String? = null,
+        chatIds: List<Int>? = null,
+        userIds: List<Int>? = null,
+        active: Boolean? = null,
+    ): List<Message> {
+        throw NotImplementedError("Search.searchMessagesAll is not implemented")
+    }
+
+    open suspend fun searchUsers(
+        query: String? = null,
+        limit: Int? = null,
+        cursor: String? = null,
+        sort: SearchSortOrder? = null,
+        order: SortOrder? = null,
+        createdFrom: String? = null,
+        createdTo: String? = null,
+        companyRoles: List<UserRole>? = null,
+    ): ListMembersResponse {
+        throw NotImplementedError("Search.searchUsers is not implemented")
+    }
+
+    open suspend fun searchUsersAll(
+        query: String? = null,
+        limit: Int? = null,
+        sort: SearchSortOrder? = null,
+        order: SortOrder? = null,
+        createdFrom: String? = null,
+        createdTo: String? = null,
+        companyRoles: List<UserRole>? = null,
+    ): List<User> {
+        throw NotImplementedError("Search.searchUsersAll is not implemented")
+    }
+}
+
+class SearchServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : SearchService() {
+    override suspend fun searchChats(
+        query: String?,
+        limit: Int?,
+        cursor: String?,
+        order: SortOrder?,
+        createdFrom: String?,
+        createdTo: String?,
+        active: Boolean?,
+        chatSubtype: ChatSubtype?,
+        personal: Boolean?,
     ): ListChatsResponse {
         val response = client.get("$baseUrl/search/chats") {
             query?.let { parameter("query", it) }
@@ -829,15 +1230,15 @@ class SearchService internal constructor(
         }
     }
 
-    suspend fun searchChatsAll(
-        query: String? = null,
-        limit: Int? = null,
-        order: SortOrder? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        active: Boolean? = null,
-        chatSubtype: ChatSubtype? = null,
-        personal: Boolean? = null,
+    override suspend fun searchChatsAll(
+        query: String?,
+        limit: Int?,
+        order: SortOrder?,
+        createdFrom: String?,
+        createdTo: String?,
+        active: Boolean?,
+        chatSubtype: ChatSubtype?,
+        personal: Boolean?,
     ): List<Chat> {
         val items = mutableListOf<Chat>()
         var cursor: String? = null
@@ -859,16 +1260,16 @@ class SearchService internal constructor(
         return items
     }
 
-    suspend fun searchMessages(
-        query: String? = null,
-        limit: Int? = null,
-        cursor: String? = null,
-        order: SortOrder? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        chatIds: List<Int>? = null,
-        userIds: List<Int>? = null,
-        active: Boolean? = null,
+    override suspend fun searchMessages(
+        query: String?,
+        limit: Int?,
+        cursor: String?,
+        order: SortOrder?,
+        createdFrom: String?,
+        createdTo: String?,
+        chatIds: List<Int>?,
+        userIds: List<Int>?,
+        active: Boolean?,
     ): ListChatMessagesResponse {
         val response = client.get("$baseUrl/search/messages") {
             query?.let { parameter("query", it) }
@@ -888,15 +1289,15 @@ class SearchService internal constructor(
         }
     }
 
-    suspend fun searchMessagesAll(
-        query: String? = null,
-        limit: Int? = null,
-        order: SortOrder? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        chatIds: List<Int>? = null,
-        userIds: List<Int>? = null,
-        active: Boolean? = null,
+    override suspend fun searchMessagesAll(
+        query: String?,
+        limit: Int?,
+        order: SortOrder?,
+        createdFrom: String?,
+        createdTo: String?,
+        chatIds: List<Int>?,
+        userIds: List<Int>?,
+        active: Boolean?,
     ): List<Message> {
         val items = mutableListOf<Message>()
         var cursor: String? = null
@@ -918,15 +1319,15 @@ class SearchService internal constructor(
         return items
     }
 
-    suspend fun searchUsers(
-        query: String? = null,
-        limit: Int? = null,
-        cursor: String? = null,
-        sort: SearchSortOrder? = null,
-        order: SortOrder? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        companyRoles: List<UserRole>? = null,
+    override suspend fun searchUsers(
+        query: String?,
+        limit: Int?,
+        cursor: String?,
+        sort: SearchSortOrder?,
+        order: SortOrder?,
+        createdFrom: String?,
+        createdTo: String?,
+        companyRoles: List<UserRole>?,
     ): ListMembersResponse {
         val response = client.get("$baseUrl/search/users") {
             query?.let { parameter("query", it) }
@@ -945,14 +1346,14 @@ class SearchService internal constructor(
         }
     }
 
-    suspend fun searchUsersAll(
-        query: String? = null,
-        limit: Int? = null,
-        sort: SearchSortOrder? = null,
-        order: SortOrder? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        companyRoles: List<UserRole>? = null,
+    override suspend fun searchUsersAll(
+        query: String?,
+        limit: Int?,
+        sort: SearchSortOrder?,
+        order: SortOrder?,
+        createdFrom: String?,
+        createdTo: String?,
+        companyRoles: List<UserRole>?,
     ): List<User> {
         val items = mutableListOf<User>()
         var cursor: String? = null
@@ -974,11 +1375,37 @@ class SearchService internal constructor(
     }
 }
 
-class TasksService internal constructor(
+abstract class TasksService {
+    open suspend fun listTasks(limit: Int? = null, cursor: String? = null): ListTasksResponse {
+        throw NotImplementedError("Tasks.listTasks is not implemented")
+    }
+
+    open suspend fun listTasksAll(limit: Int? = null): List<Task> {
+        throw NotImplementedError("Tasks.listTasksAll is not implemented")
+    }
+
+    open suspend fun getTask(id: Int): Task {
+        throw NotImplementedError("Tasks.getTask is not implemented")
+    }
+
+    open suspend fun createTask(request: TaskCreateRequest): Task {
+        throw NotImplementedError("Tasks.createTask is not implemented")
+    }
+
+    open suspend fun updateTask(id: Int, request: TaskUpdateRequest): Task {
+        throw NotImplementedError("Tasks.updateTask is not implemented")
+    }
+
+    open suspend fun deleteTask(id: Int) {
+        throw NotImplementedError("Tasks.deleteTask is not implemented")
+    }
+}
+
+class TasksServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun listTasks(limit: Int? = null, cursor: String? = null): ListTasksResponse {
+) : TasksService() {
+    override suspend fun listTasks(limit: Int?, cursor: String?): ListTasksResponse {
         val response = client.get("$baseUrl/tasks") {
             limit?.let { parameter("limit", it) }
             cursor?.let { parameter("cursor", it) }
@@ -990,7 +1417,7 @@ class TasksService internal constructor(
         }
     }
 
-    suspend fun listTasksAll(limit: Int? = null): List<Task> {
+    override suspend fun listTasksAll(limit: Int?): List<Task> {
         val items = mutableListOf<Task>()
         var cursor: String? = null
         do {
@@ -1001,7 +1428,7 @@ class TasksService internal constructor(
         return items
     }
 
-    suspend fun getTask(id: Int): Task {
+    override suspend fun getTask(id: Int): Task {
         val response = client.get("$baseUrl/tasks/$id")
         return when (response.status.value) {
             200 -> response.body<TaskDataWrapper>().data
@@ -1010,7 +1437,7 @@ class TasksService internal constructor(
         }
     }
 
-    suspend fun createTask(request: TaskCreateRequest): Task {
+    override suspend fun createTask(request: TaskCreateRequest): Task {
         val response = client.post("$baseUrl/tasks") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -1022,7 +1449,7 @@ class TasksService internal constructor(
         }
     }
 
-    suspend fun updateTask(id: Int, request: TaskUpdateRequest): Task {
+    override suspend fun updateTask(id: Int, request: TaskUpdateRequest): Task {
         val response = client.put("$baseUrl/tasks/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -1034,7 +1461,7 @@ class TasksService internal constructor(
         }
     }
 
-    suspend fun deleteTask(id: Int) {
+    override suspend fun deleteTask(id: Int) {
         val response = client.delete("$baseUrl/tasks/$id")
         when (response.status.value) {
             204 -> return
@@ -1044,14 +1471,56 @@ class TasksService internal constructor(
     }
 }
 
-class UsersService internal constructor(
-    private val baseUrl: String,
-    private val client: HttpClient,
-) {
-    suspend fun listUsers(
+abstract class UsersService {
+    open suspend fun listUsers(
         query: String? = null,
         limit: Int? = null,
         cursor: String? = null,
+    ): ListMembersResponse {
+        throw NotImplementedError("Users.listUsers is not implemented")
+    }
+
+    open suspend fun listUsersAll(query: String? = null, limit: Int? = null): List<User> {
+        throw NotImplementedError("Users.listUsersAll is not implemented")
+    }
+
+    open suspend fun getUser(id: Int): User {
+        throw NotImplementedError("Users.getUser is not implemented")
+    }
+
+    open suspend fun getUserStatus(userId: Int): Any {
+        throw NotImplementedError("Users.getUserStatus is not implemented")
+    }
+
+    open suspend fun createUser(request: UserCreateRequest): User {
+        throw NotImplementedError("Users.createUser is not implemented")
+    }
+
+    open suspend fun updateUser(id: Int, request: UserUpdateRequest): User {
+        throw NotImplementedError("Users.updateUser is not implemented")
+    }
+
+    open suspend fun updateUserStatus(userId: Int, request: StatusUpdateRequest): UserStatus {
+        throw NotImplementedError("Users.updateUserStatus is not implemented")
+    }
+
+    open suspend fun deleteUser(id: Int) {
+        throw NotImplementedError("Users.deleteUser is not implemented")
+    }
+
+    open suspend fun deleteUserStatus(userId: Int) {
+        throw NotImplementedError("Users.deleteUserStatus is not implemented")
+    }
+}
+
+class UsersServiceImpl internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
+) : UsersService() {
+    override suspend fun listUsers(
+        query: String?,
+        limit: Int?,
+        cursor: String?,
     ): ListMembersResponse {
         val response = client.get("$baseUrl/users") {
             query?.let { parameter("query", it) }
@@ -1065,7 +1534,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun listUsersAll(query: String? = null, limit: Int? = null): List<User> {
+    override suspend fun listUsersAll(query: String?, limit: Int?): List<User> {
         val items = mutableListOf<User>()
         var cursor: String? = null
         do {
@@ -1076,7 +1545,7 @@ class UsersService internal constructor(
         return items
     }
 
-    suspend fun getUser(id: Int): User {
+    override suspend fun getUser(id: Int): User {
         val response = client.get("$baseUrl/users/$id")
         return when (response.status.value) {
             200 -> response.body<UserDataWrapper>().data
@@ -1085,7 +1554,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun getUserStatus(userId: Int): Any {
+    override suspend fun getUserStatus(userId: Int): Any {
         val response = client.get("$baseUrl/users/$userId/status")
         return when (response.status.value) {
             200 -> response.body()
@@ -1094,7 +1563,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun createUser(request: UserCreateRequest): User {
+    override suspend fun createUser(request: UserCreateRequest): User {
         val response = client.post("$baseUrl/users") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -1106,7 +1575,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun updateUser(id: Int, request: UserUpdateRequest): User {
+    override suspend fun updateUser(id: Int, request: UserUpdateRequest): User {
         val response = client.put("$baseUrl/users/$id") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -1118,7 +1587,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun updateUserStatus(userId: Int, request: StatusUpdateRequest): UserStatus {
+    override suspend fun updateUserStatus(userId: Int, request: StatusUpdateRequest): UserStatus {
         val response = client.put("$baseUrl/users/$userId/status") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -1130,7 +1599,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun deleteUser(id: Int) {
+    override suspend fun deleteUser(id: Int) {
         val response = client.delete("$baseUrl/users/$id")
         when (response.status.value) {
             204 -> return
@@ -1139,7 +1608,7 @@ class UsersService internal constructor(
         }
     }
 
-    suspend fun deleteUserStatus(userId: Int) {
+    override suspend fun deleteUserStatus(userId: Int) {
         val response = client.delete("$baseUrl/users/$userId/status")
         when (response.status.value) {
             204 -> return
@@ -1149,11 +1618,17 @@ class UsersService internal constructor(
     }
 }
 
-class ViewsService internal constructor(
+abstract class ViewsService {
+    open suspend fun openView(request: OpenViewRequest) {
+        throw NotImplementedError("Views.openView is not implemented")
+    }
+}
+
+class ViewsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) {
-    suspend fun openView(request: OpenViewRequest) {
+) : ViewsService() {
+    override suspend fun openView(request: OpenViewRequest) {
         val response = client.post("$baseUrl/views/open") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -1166,7 +1641,26 @@ class ViewsService internal constructor(
     }
 }
 
-class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/shared/v1") : Closeable {
+data class PachcaServices(
+    val bots: BotsService? = null,
+    val chats: ChatsService? = null,
+    val common: CommonService? = null,
+    val groupTags: GroupTagsService? = null,
+    val linkPreviews: LinkPreviewsService? = null,
+    val members: MembersService? = null,
+    val messages: MessagesService? = null,
+    val profile: ProfileService? = null,
+    val reactions: ReactionsService? = null,
+    val readMembers: ReadMembersService? = null,
+    val search: SearchService? = null,
+    val security: SecurityService? = null,
+    val tasks: TasksService? = null,
+    val threads: ThreadsService? = null,
+    val users: UsersService? = null,
+    val views: ViewsService? = null
+)
+
+class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/shared/v1", services: PachcaServices = PachcaServices()) : Closeable {
     private val client = HttpClient {
         expectSuccess = false
         followRedirects = false
@@ -1186,22 +1680,22 @@ class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/
         }
     }
 
-    val bots = BotsService(baseUrl, client)
-    val chats = ChatsService(baseUrl, client)
-    val common = CommonService(baseUrl, client)
-    val groupTags = GroupTagsService(baseUrl, client)
-    val linkPreviews = LinkPreviewsService(baseUrl, client)
-    val members = MembersService(baseUrl, client)
-    val messages = MessagesService(baseUrl, client)
-    val profile = ProfileService(baseUrl, client)
-    val reactions = ReactionsService(baseUrl, client)
-    val readMembers = ReadMembersService(baseUrl, client)
-    val search = SearchService(baseUrl, client)
-    val security = SecurityService(baseUrl, client)
-    val tasks = TasksService(baseUrl, client)
-    val threads = ThreadsService(baseUrl, client)
-    val users = UsersService(baseUrl, client)
-    val views = ViewsService(baseUrl, client)
+    val bots: BotsService = services.bots ?: BotsServiceImpl(baseUrl, client)
+    val chats: ChatsService = services.chats ?: ChatsServiceImpl(baseUrl, client)
+    val common: CommonService = services.common ?: CommonServiceImpl(baseUrl, client)
+    val groupTags: GroupTagsService = services.groupTags ?: GroupTagsServiceImpl(baseUrl, client)
+    val linkPreviews: LinkPreviewsService = services.linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client)
+    val members: MembersService = services.members ?: MembersServiceImpl(baseUrl, client)
+    val messages: MessagesService = services.messages ?: MessagesServiceImpl(baseUrl, client)
+    val profile: ProfileService = services.profile ?: ProfileServiceImpl(baseUrl, client)
+    val reactions: ReactionsService = services.reactions ?: ReactionsServiceImpl(baseUrl, client)
+    val readMembers: ReadMembersService = services.readMembers ?: ReadMembersServiceImpl(baseUrl, client)
+    val search: SearchService = services.search ?: SearchServiceImpl(baseUrl, client)
+    val security: SecurityService = services.security ?: SecurityServiceImpl(baseUrl, client)
+    val tasks: TasksService = services.tasks ?: TasksServiceImpl(baseUrl, client)
+    val threads: ThreadsService = services.threads ?: ThreadsServiceImpl(baseUrl, client)
+    val users: UsersService = services.users ?: UsersServiceImpl(baseUrl, client)
+    val views: ViewsService = services.views ?: ViewsServiceImpl(baseUrl, client)
 
     override fun close() {
         client.close()

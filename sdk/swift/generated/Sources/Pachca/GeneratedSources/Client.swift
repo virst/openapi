@@ -3,7 +3,23 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public struct SecurityService {
+private func pachcaNotImplemented(_ method: String) -> Error {
+    NSError(domain: "PachcaClient", code: 1, userInfo: [NSLocalizedDescriptionKey: method + " is not implemented"])
+}
+
+open class SecurityService {
+    public init() {}
+
+    open func getAuditEvents(startTime: String? = nil, endTime: String? = nil, eventKey: AuditEventKey? = nil, actorId: String? = nil, actorType: String? = nil, entityId: String? = nil, entityType: String? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> GetAuditEventsResponse {
+        throw pachcaNotImplemented("Security.getAuditEvents")
+    }
+
+    open func getAuditEventsAll(startTime: String? = nil, endTime: String? = nil, eventKey: AuditEventKey? = nil, actorId: String? = nil, actorType: String? = nil, entityId: String? = nil, entityType: String? = nil, limit: Int? = nil) async throws -> [AuditEvent] {
+        throw pachcaNotImplemented("Security.getAuditEventsAll")
+    }
+}
+
+public final class SecurityServiceImpl: SecurityService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -12,9 +28,10 @@ public struct SecurityService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func getAuditEvents(startTime: String? = nil, endTime: String? = nil, eventKey: AuditEventKey? = nil, actorId: String? = nil, actorType: String? = nil, entityId: String? = nil, entityType: String? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> GetAuditEventsResponse {
+    public override func getAuditEvents(startTime: String? = nil, endTime: String? = nil, eventKey: AuditEventKey? = nil, actorId: String? = nil, actorType: String? = nil, entityId: String? = nil, entityType: String? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> GetAuditEventsResponse {
         var components = URLComponents(string: "\(baseURL)/audit_events")!
         var queryItems: [URLQueryItem] = []
         if let startTime { queryItems.append(URLQueryItem(name: "start_time", value: startTime)) }
@@ -41,7 +58,7 @@ public struct SecurityService {
         }
     }
 
-    public func getAuditEventsAll(startTime: String? = nil, endTime: String? = nil, eventKey: AuditEventKey? = nil, actorId: String? = nil, actorType: String? = nil, entityId: String? = nil, entityType: String? = nil, limit: Int? = nil) async throws -> [AuditEvent] {
+    public override func getAuditEventsAll(startTime: String? = nil, endTime: String? = nil, eventKey: AuditEventKey? = nil, actorId: String? = nil, actorType: String? = nil, entityId: String? = nil, entityType: String? = nil, limit: Int? = nil) async throws -> [AuditEvent] {
         var items: [AuditEvent] = []
         var cursor: String? = nil
         repeat {
@@ -53,7 +70,27 @@ public struct SecurityService {
     }
 }
 
-public struct BotsService {
+open class BotsService {
+    public init() {}
+
+    open func getWebhookEvents(limit: Int? = nil, cursor: String? = nil) async throws -> GetWebhookEventsResponse {
+        throw pachcaNotImplemented("Bots.getWebhookEvents")
+    }
+
+    open func getWebhookEventsAll(limit: Int? = nil) async throws -> [WebhookEvent] {
+        throw pachcaNotImplemented("Bots.getWebhookEventsAll")
+    }
+
+    open func updateBot(id: Int, request body: BotUpdateRequest) async throws -> BotResponse {
+        throw pachcaNotImplemented("Bots.updateBot")
+    }
+
+    open func deleteWebhookEvent(id: String) async throws -> Void {
+        throw pachcaNotImplemented("Bots.deleteWebhookEvent")
+    }
+}
+
+public final class BotsServiceImpl: BotsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -62,9 +99,10 @@ public struct BotsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func getWebhookEvents(limit: Int? = nil, cursor: String? = nil) async throws -> GetWebhookEventsResponse {
+    public override func getWebhookEvents(limit: Int? = nil, cursor: String? = nil) async throws -> GetWebhookEventsResponse {
         var components = URLComponents(string: "\(baseURL)/webhooks/events")!
         var queryItems: [URLQueryItem] = []
         if let limit { queryItems.append(URLQueryItem(name: "limit", value: String(limit))) }
@@ -84,7 +122,7 @@ public struct BotsService {
         }
     }
 
-    public func getWebhookEventsAll(limit: Int? = nil) async throws -> [WebhookEvent] {
+    public override func getWebhookEventsAll(limit: Int? = nil) async throws -> [WebhookEvent] {
         var items: [WebhookEvent] = []
         var cursor: String? = nil
         repeat {
@@ -95,7 +133,7 @@ public struct BotsService {
         return items
     }
 
-    public func updateBot(id: Int, request body: BotUpdateRequest) async throws -> BotResponse {
+    public override func updateBot(id: Int, request body: BotUpdateRequest) async throws -> BotResponse {
         var request = URLRequest(url: URL(string: "\(baseURL)/bots/\(id)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -113,7 +151,7 @@ public struct BotsService {
         }
     }
 
-    public func deleteWebhookEvent(id: String) async throws -> Void {
+    public override func deleteWebhookEvent(id: String) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/webhooks/events/\(id)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -130,7 +168,39 @@ public struct BotsService {
     }
 }
 
-public struct ChatsService {
+open class ChatsService {
+    public init() {}
+
+    open func listChats(sortId: SortOrder? = nil, availability: ChatAvailability? = nil, lastMessageAtAfter: String? = nil, lastMessageAtBefore: String? = nil, personal: Bool? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListChatsResponse {
+        throw pachcaNotImplemented("Chats.listChats")
+    }
+
+    open func listChatsAll(sortId: SortOrder? = nil, availability: ChatAvailability? = nil, lastMessageAtAfter: String? = nil, lastMessageAtBefore: String? = nil, personal: Bool? = nil, limit: Int? = nil) async throws -> [Chat] {
+        throw pachcaNotImplemented("Chats.listChatsAll")
+    }
+
+    open func getChat(id: Int) async throws -> Chat {
+        throw pachcaNotImplemented("Chats.getChat")
+    }
+
+    open func createChat(request body: ChatCreateRequest) async throws -> Chat {
+        throw pachcaNotImplemented("Chats.createChat")
+    }
+
+    open func updateChat(id: Int, request body: ChatUpdateRequest) async throws -> Chat {
+        throw pachcaNotImplemented("Chats.updateChat")
+    }
+
+    open func archiveChat(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Chats.archiveChat")
+    }
+
+    open func unarchiveChat(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Chats.unarchiveChat")
+    }
+}
+
+public final class ChatsServiceImpl: ChatsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -139,9 +209,10 @@ public struct ChatsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listChats(sortId: SortOrder? = nil, availability: ChatAvailability? = nil, lastMessageAtAfter: String? = nil, lastMessageAtBefore: String? = nil, personal: Bool? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListChatsResponse {
+    public override func listChats(sortId: SortOrder? = nil, availability: ChatAvailability? = nil, lastMessageAtAfter: String? = nil, lastMessageAtBefore: String? = nil, personal: Bool? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListChatsResponse {
         var components = URLComponents(string: "\(baseURL)/chats")!
         var queryItems: [URLQueryItem] = []
         if let sortId { queryItems.append(URLQueryItem(name: "sort[{field}]", value: sortId.rawValue)) }
@@ -166,7 +237,7 @@ public struct ChatsService {
         }
     }
 
-    public func listChatsAll(sortId: SortOrder? = nil, availability: ChatAvailability? = nil, lastMessageAtAfter: String? = nil, lastMessageAtBefore: String? = nil, personal: Bool? = nil, limit: Int? = nil) async throws -> [Chat] {
+    public override func listChatsAll(sortId: SortOrder? = nil, availability: ChatAvailability? = nil, lastMessageAtAfter: String? = nil, lastMessageAtBefore: String? = nil, personal: Bool? = nil, limit: Int? = nil) async throws -> [Chat] {
         var items: [Chat] = []
         var cursor: String? = nil
         repeat {
@@ -177,7 +248,7 @@ public struct ChatsService {
         return items
     }
 
-    public func getChat(id: Int) async throws -> Chat {
+    public override func getChat(id: Int) async throws -> Chat {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -192,7 +263,7 @@ public struct ChatsService {
         }
     }
 
-    public func createChat(request body: ChatCreateRequest) async throws -> Chat {
+    public override func createChat(request body: ChatCreateRequest) async throws -> Chat {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -210,7 +281,7 @@ public struct ChatsService {
         }
     }
 
-    public func updateChat(id: Int, request body: ChatUpdateRequest) async throws -> Chat {
+    public override func updateChat(id: Int, request body: ChatUpdateRequest) async throws -> Chat {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -228,7 +299,7 @@ public struct ChatsService {
         }
     }
 
-    public func archiveChat(id: Int) async throws -> Void {
+    public override func archiveChat(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/archive")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -244,7 +315,7 @@ public struct ChatsService {
         }
     }
 
-    public func unarchiveChat(id: Int) async throws -> Void {
+    public override func unarchiveChat(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/unarchive")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -261,7 +332,31 @@ public struct ChatsService {
     }
 }
 
-public struct CommonService {
+open class CommonService {
+    public init() {}
+
+    open func downloadExport(id: Int) async throws -> String {
+        throw pachcaNotImplemented("Common.downloadExport")
+    }
+
+    open func listProperties(entityType: SearchEntityType) async throws -> ListPropertiesResponse {
+        throw pachcaNotImplemented("Common.listProperties")
+    }
+
+    open func requestExport(request body: ExportRequest) async throws -> Void {
+        throw pachcaNotImplemented("Common.requestExport")
+    }
+
+    open func uploadFile(directUrl: String, request body: FileUploadRequest) async throws -> Void {
+        throw pachcaNotImplemented("Common.uploadFile")
+    }
+
+    open func getUploadParams() async throws -> UploadParams {
+        throw pachcaNotImplemented("Common.getUploadParams")
+    }
+}
+
+public final class CommonServiceImpl: CommonService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -270,9 +365,10 @@ public struct CommonService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func downloadExport(id: Int) async throws -> String {
+    public override func downloadExport(id: Int) async throws -> String {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/exports/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let delegate = RedirectPreventer()
@@ -291,7 +387,7 @@ public struct CommonService {
         }
     }
 
-    public func listProperties(entityType: SearchEntityType) async throws -> ListPropertiesResponse {
+    public override func listProperties(entityType: SearchEntityType) async throws -> ListPropertiesResponse {
         var components = URLComponents(string: "\(baseURL)/custom_properties")!
         var queryItems: [URLQueryItem] = []
         queryItems.append(URLQueryItem(name: "entity_type", value: entityType.rawValue))
@@ -310,7 +406,7 @@ public struct CommonService {
         }
     }
 
-    public func requestExport(request body: ExportRequest) async throws -> Void {
+    public override func requestExport(request body: ExportRequest) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/exports")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -328,7 +424,7 @@ public struct CommonService {
         }
     }
 
-    public func uploadFile(directUrl: String, request body: FileUploadRequest) async throws -> Void {
+    public override func uploadFile(directUrl: String, request body: FileUploadRequest) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(directUrl)")!)
         request.httpMethod = "POST"
         let boundary = UUID().uuidString
@@ -364,7 +460,7 @@ public struct CommonService {
         }
     }
 
-    public func getUploadParams() async throws -> UploadParams {
+    public override func getUploadParams() async throws -> UploadParams {
         var request = URLRequest(url: URL(string: "\(baseURL)/uploads")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -381,7 +477,43 @@ public struct CommonService {
     }
 }
 
-public struct MembersService {
+open class MembersService {
+    public init() {}
+
+    open func listMembers(id: Int, role: ChatMemberRoleFilter? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
+        throw pachcaNotImplemented("Members.listMembers")
+    }
+
+    open func listMembersAll(id: Int, role: ChatMemberRoleFilter? = nil, limit: Int? = nil) async throws -> [User] {
+        throw pachcaNotImplemented("Members.listMembersAll")
+    }
+
+    open func addTags(id: Int, groupTagIds: [Int]) async throws -> Void {
+        throw pachcaNotImplemented("Members.addTags")
+    }
+
+    open func addMembers(id: Int, request body: AddMembersRequest) async throws -> Void {
+        throw pachcaNotImplemented("Members.addMembers")
+    }
+
+    open func updateMemberRole(id: Int, userId: Int, role: ChatMemberRole) async throws -> Void {
+        throw pachcaNotImplemented("Members.updateMemberRole")
+    }
+
+    open func removeTag(id: Int, tagId: Int) async throws -> Void {
+        throw pachcaNotImplemented("Members.removeTag")
+    }
+
+    open func leaveChat(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Members.leaveChat")
+    }
+
+    open func removeMember(id: Int, userId: Int) async throws -> Void {
+        throw pachcaNotImplemented("Members.removeMember")
+    }
+}
+
+public final class MembersServiceImpl: MembersService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -390,9 +522,10 @@ public struct MembersService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listMembers(id: Int, role: ChatMemberRoleFilter? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
+    public override func listMembers(id: Int, role: ChatMemberRoleFilter? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
         var components = URLComponents(string: "\(baseURL)/chats/{id}/members")!
         var queryItems: [URLQueryItem] = []
         if let role { queryItems.append(URLQueryItem(name: "role", value: role.rawValue)) }
@@ -413,7 +546,7 @@ public struct MembersService {
         }
     }
 
-    public func listMembersAll(id: Int, role: ChatMemberRoleFilter? = nil, limit: Int? = nil) async throws -> [User] {
+    public override func listMembersAll(id: Int, role: ChatMemberRoleFilter? = nil, limit: Int? = nil) async throws -> [User] {
         var items: [User] = []
         var cursor: String? = nil
         repeat {
@@ -424,7 +557,7 @@ public struct MembersService {
         return items
     }
 
-    public func addTags(id: Int, groupTagIds: [Int]) async throws -> Void {
+    public override func addTags(id: Int, groupTagIds: [Int]) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/group_tags")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -442,7 +575,7 @@ public struct MembersService {
         }
     }
 
-    public func addMembers(id: Int, request body: AddMembersRequest) async throws -> Void {
+    public override func addMembers(id: Int, request body: AddMembersRequest) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/members")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -460,7 +593,7 @@ public struct MembersService {
         }
     }
 
-    public func updateMemberRole(id: Int, userId: Int, role: ChatMemberRole) async throws -> Void {
+    public override func updateMemberRole(id: Int, userId: Int, role: ChatMemberRole) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/members/\(userId)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -478,7 +611,7 @@ public struct MembersService {
         }
     }
 
-    public func removeTag(id: Int, tagId: Int) async throws -> Void {
+    public override func removeTag(id: Int, tagId: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/group_tags/\(tagId)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -494,7 +627,7 @@ public struct MembersService {
         }
     }
 
-    public func leaveChat(id: Int) async throws -> Void {
+    public override func leaveChat(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/leave")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -510,7 +643,7 @@ public struct MembersService {
         }
     }
 
-    public func removeMember(id: Int, userId: Int) async throws -> Void {
+    public override func removeMember(id: Int, userId: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/chats/\(id)/members/\(userId)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -527,7 +660,43 @@ public struct MembersService {
     }
 }
 
-public struct GroupTagsService {
+open class GroupTagsService {
+    public init() {}
+
+    open func listTags(names: TagNamesFilter? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListTagsResponse {
+        throw pachcaNotImplemented("Group tags.listTags")
+    }
+
+    open func listTagsAll(names: TagNamesFilter? = nil, limit: Int? = nil) async throws -> [GroupTag] {
+        throw pachcaNotImplemented("Group tags.listTagsAll")
+    }
+
+    open func getTag(id: Int) async throws -> GroupTag {
+        throw pachcaNotImplemented("Group tags.getTag")
+    }
+
+    open func getTagUsers(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
+        throw pachcaNotImplemented("Group tags.getTagUsers")
+    }
+
+    open func getTagUsersAll(id: Int, limit: Int? = nil) async throws -> [User] {
+        throw pachcaNotImplemented("Group tags.getTagUsersAll")
+    }
+
+    open func createTag(request body: GroupTagRequest) async throws -> GroupTag {
+        throw pachcaNotImplemented("Group tags.createTag")
+    }
+
+    open func updateTag(id: Int, request body: GroupTagRequest) async throws -> GroupTag {
+        throw pachcaNotImplemented("Group tags.updateTag")
+    }
+
+    open func deleteTag(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Group tags.deleteTag")
+    }
+}
+
+public final class GroupTagsServiceImpl: GroupTagsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -536,9 +705,10 @@ public struct GroupTagsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listTags(names: TagNamesFilter? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListTagsResponse {
+    public override func listTags(names: TagNamesFilter? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListTagsResponse {
         var components = URLComponents(string: "\(baseURL)/group_tags")!
         var queryItems: [URLQueryItem] = []
         if let names { queryItems.append(URLQueryItem(name: "names", value: String(data: try serialize(names), encoding: .utf8)!)) }
@@ -559,7 +729,7 @@ public struct GroupTagsService {
         }
     }
 
-    public func listTagsAll(names: TagNamesFilter? = nil, limit: Int? = nil) async throws -> [GroupTag] {
+    public override func listTagsAll(names: TagNamesFilter? = nil, limit: Int? = nil) async throws -> [GroupTag] {
         var items: [GroupTag] = []
         var cursor: String? = nil
         repeat {
@@ -570,7 +740,7 @@ public struct GroupTagsService {
         return items
     }
 
-    public func getTag(id: Int) async throws -> GroupTag {
+    public override func getTag(id: Int) async throws -> GroupTag {
         var request = URLRequest(url: URL(string: "\(baseURL)/group_tags/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -585,7 +755,7 @@ public struct GroupTagsService {
         }
     }
 
-    public func getTagUsers(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
+    public override func getTagUsers(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
         var components = URLComponents(string: "\(baseURL)/group_tags/{id}/users")!
         var queryItems: [URLQueryItem] = []
         if let limit { queryItems.append(URLQueryItem(name: "limit", value: String(limit))) }
@@ -605,7 +775,7 @@ public struct GroupTagsService {
         }
     }
 
-    public func getTagUsersAll(id: Int, limit: Int? = nil) async throws -> [User] {
+    public override func getTagUsersAll(id: Int, limit: Int? = nil) async throws -> [User] {
         var items: [User] = []
         var cursor: String? = nil
         repeat {
@@ -616,7 +786,7 @@ public struct GroupTagsService {
         return items
     }
 
-    public func createTag(request body: GroupTagRequest) async throws -> GroupTag {
+    public override func createTag(request body: GroupTagRequest) async throws -> GroupTag {
         var request = URLRequest(url: URL(string: "\(baseURL)/group_tags")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -634,7 +804,7 @@ public struct GroupTagsService {
         }
     }
 
-    public func updateTag(id: Int, request body: GroupTagRequest) async throws -> GroupTag {
+    public override func updateTag(id: Int, request body: GroupTagRequest) async throws -> GroupTag {
         var request = URLRequest(url: URL(string: "\(baseURL)/group_tags/\(id)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -652,7 +822,7 @@ public struct GroupTagsService {
         }
     }
 
-    public func deleteTag(id: Int) async throws -> Void {
+    public override func deleteTag(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/group_tags/\(id)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -669,7 +839,43 @@ public struct GroupTagsService {
     }
 }
 
-public struct MessagesService {
+open class MessagesService {
+    public init() {}
+
+    open func listChatMessages(chatId: Int, sortId: SortOrder? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListChatMessagesResponse {
+        throw pachcaNotImplemented("Messages.listChatMessages")
+    }
+
+    open func listChatMessagesAll(chatId: Int, sortId: SortOrder? = nil, limit: Int? = nil) async throws -> [Message] {
+        throw pachcaNotImplemented("Messages.listChatMessagesAll")
+    }
+
+    open func getMessage(id: Int) async throws -> Message {
+        throw pachcaNotImplemented("Messages.getMessage")
+    }
+
+    open func createMessage(request body: MessageCreateRequest) async throws -> Message {
+        throw pachcaNotImplemented("Messages.createMessage")
+    }
+
+    open func pinMessage(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Messages.pinMessage")
+    }
+
+    open func updateMessage(id: Int, request body: MessageUpdateRequest) async throws -> Message {
+        throw pachcaNotImplemented("Messages.updateMessage")
+    }
+
+    open func deleteMessage(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Messages.deleteMessage")
+    }
+
+    open func unpinMessage(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Messages.unpinMessage")
+    }
+}
+
+public final class MessagesServiceImpl: MessagesService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -678,9 +884,10 @@ public struct MessagesService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listChatMessages(chatId: Int, sortId: SortOrder? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListChatMessagesResponse {
+    public override func listChatMessages(chatId: Int, sortId: SortOrder? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListChatMessagesResponse {
         var components = URLComponents(string: "\(baseURL)/messages")!
         var queryItems: [URLQueryItem] = []
         queryItems.append(URLQueryItem(name: "chat_id", value: String(chatId)))
@@ -702,7 +909,7 @@ public struct MessagesService {
         }
     }
 
-    public func listChatMessagesAll(chatId: Int, sortId: SortOrder? = nil, limit: Int? = nil) async throws -> [Message] {
+    public override func listChatMessagesAll(chatId: Int, sortId: SortOrder? = nil, limit: Int? = nil) async throws -> [Message] {
         var items: [Message] = []
         var cursor: String? = nil
         repeat {
@@ -713,7 +920,7 @@ public struct MessagesService {
         return items
     }
 
-    public func getMessage(id: Int) async throws -> Message {
+    public override func getMessage(id: Int) async throws -> Message {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -728,7 +935,7 @@ public struct MessagesService {
         }
     }
 
-    public func createMessage(request body: MessageCreateRequest) async throws -> Message {
+    public override func createMessage(request body: MessageCreateRequest) async throws -> Message {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -746,7 +953,7 @@ public struct MessagesService {
         }
     }
 
-    public func pinMessage(id: Int) async throws -> Void {
+    public override func pinMessage(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)/pin")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -762,7 +969,7 @@ public struct MessagesService {
         }
     }
 
-    public func updateMessage(id: Int, request body: MessageUpdateRequest) async throws -> Message {
+    public override func updateMessage(id: Int, request body: MessageUpdateRequest) async throws -> Message {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -780,7 +987,7 @@ public struct MessagesService {
         }
     }
 
-    public func deleteMessage(id: Int) async throws -> Void {
+    public override func deleteMessage(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -796,7 +1003,7 @@ public struct MessagesService {
         }
     }
 
-    public func unpinMessage(id: Int) async throws -> Void {
+    public override func unpinMessage(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)/pin")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -813,7 +1020,15 @@ public struct MessagesService {
     }
 }
 
-public struct LinkPreviewsService {
+open class LinkPreviewsService {
+    public init() {}
+
+    open func createLinkPreviews(id: Int, request body: LinkPreviewsRequest) async throws -> Void {
+        throw pachcaNotImplemented("Link Previews.createLinkPreviews")
+    }
+}
+
+public final class LinkPreviewsServiceImpl: LinkPreviewsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -822,9 +1037,10 @@ public struct LinkPreviewsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func createLinkPreviews(id: Int, request body: LinkPreviewsRequest) async throws -> Void {
+    public override func createLinkPreviews(id: Int, request body: LinkPreviewsRequest) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)/link_previews")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -843,7 +1059,27 @@ public struct LinkPreviewsService {
     }
 }
 
-public struct ReactionsService {
+open class ReactionsService {
+    public init() {}
+
+    open func listReactions(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> ListReactionsResponse {
+        throw pachcaNotImplemented("Reactions.listReactions")
+    }
+
+    open func listReactionsAll(id: Int, limit: Int? = nil) async throws -> [Reaction] {
+        throw pachcaNotImplemented("Reactions.listReactionsAll")
+    }
+
+    open func addReaction(id: Int, request body: ReactionRequest) async throws -> Reaction {
+        throw pachcaNotImplemented("Reactions.addReaction")
+    }
+
+    open func removeReaction(id: Int, code: String, name: String? = nil) async throws -> Void {
+        throw pachcaNotImplemented("Reactions.removeReaction")
+    }
+}
+
+public final class ReactionsServiceImpl: ReactionsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -852,9 +1088,10 @@ public struct ReactionsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listReactions(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> ListReactionsResponse {
+    public override func listReactions(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> ListReactionsResponse {
         var components = URLComponents(string: "\(baseURL)/messages/{id}/reactions")!
         var queryItems: [URLQueryItem] = []
         if let limit { queryItems.append(URLQueryItem(name: "limit", value: String(limit))) }
@@ -874,7 +1111,7 @@ public struct ReactionsService {
         }
     }
 
-    public func listReactionsAll(id: Int, limit: Int? = nil) async throws -> [Reaction] {
+    public override func listReactionsAll(id: Int, limit: Int? = nil) async throws -> [Reaction] {
         var items: [Reaction] = []
         var cursor: String? = nil
         repeat {
@@ -885,7 +1122,7 @@ public struct ReactionsService {
         return items
     }
 
-    public func addReaction(id: Int, request body: ReactionRequest) async throws -> Reaction {
+    public override func addReaction(id: Int, request body: ReactionRequest) async throws -> Reaction {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)/reactions")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -903,7 +1140,7 @@ public struct ReactionsService {
         }
     }
 
-    public func removeReaction(id: Int, code: String, name: String? = nil) async throws -> Void {
+    public override func removeReaction(id: Int, code: String, name: String? = nil) async throws -> Void {
         var components = URLComponents(string: "\(baseURL)/messages/{id}/reactions")!
         var queryItems: [URLQueryItem] = []
         queryItems.append(URLQueryItem(name: "code", value: String(code)))
@@ -925,7 +1162,15 @@ public struct ReactionsService {
     }
 }
 
-public struct ReadMembersService {
+open class ReadMembersService {
+    public init() {}
+
+    open func listReadMembers(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> String {
+        throw pachcaNotImplemented("Read members.listReadMembers")
+    }
+}
+
+public final class ReadMembersServiceImpl: ReadMembersService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -934,9 +1179,10 @@ public struct ReadMembersService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listReadMembers(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> String {
+    public override func listReadMembers(id: Int, limit: Int? = nil, cursor: String? = nil) async throws -> String {
         var components = URLComponents(string: "\(baseURL)/messages/{id}/read_member_ids")!
         var queryItems: [URLQueryItem] = []
         if let limit { queryItems.append(URLQueryItem(name: "limit", value: String(limit))) }
@@ -957,7 +1203,19 @@ public struct ReadMembersService {
     }
 }
 
-public struct ThreadsService {
+open class ThreadsService {
+    public init() {}
+
+    open func getThread(id: Int) async throws -> Thread {
+        throw pachcaNotImplemented("Threads.getThread")
+    }
+
+    open func createThread(id: Int) async throws -> Thread {
+        throw pachcaNotImplemented("Threads.createThread")
+    }
+}
+
+public final class ThreadsServiceImpl: ThreadsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -966,9 +1224,10 @@ public struct ThreadsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func getThread(id: Int) async throws -> Thread {
+    public override func getThread(id: Int) async throws -> Thread {
         var request = URLRequest(url: URL(string: "\(baseURL)/threads/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -983,7 +1242,7 @@ public struct ThreadsService {
         }
     }
 
-    public func createThread(id: Int) async throws -> Thread {
+    public override func createThread(id: Int) async throws -> Thread {
         var request = URLRequest(url: URL(string: "\(baseURL)/messages/\(id)/thread")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1000,7 +1259,31 @@ public struct ThreadsService {
     }
 }
 
-public struct ProfileService {
+open class ProfileService {
+    public init() {}
+
+    open func getTokenInfo() async throws -> AccessTokenInfo {
+        throw pachcaNotImplemented("Profile.getTokenInfo")
+    }
+
+    open func getProfile() async throws -> User {
+        throw pachcaNotImplemented("Profile.getProfile")
+    }
+
+    open func getStatus() async throws -> String {
+        throw pachcaNotImplemented("Profile.getStatus")
+    }
+
+    open func updateStatus(request body: StatusUpdateRequest) async throws -> UserStatus {
+        throw pachcaNotImplemented("Profile.updateStatus")
+    }
+
+    open func deleteStatus() async throws -> Void {
+        throw pachcaNotImplemented("Profile.deleteStatus")
+    }
+}
+
+public final class ProfileServiceImpl: ProfileService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -1009,9 +1292,10 @@ public struct ProfileService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func getTokenInfo() async throws -> AccessTokenInfo {
+    public override func getTokenInfo() async throws -> AccessTokenInfo {
         var request = URLRequest(url: URL(string: "\(baseURL)/oauth/token/info")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -1026,7 +1310,7 @@ public struct ProfileService {
         }
     }
 
-    public func getProfile() async throws -> User {
+    public override func getProfile() async throws -> User {
         var request = URLRequest(url: URL(string: "\(baseURL)/profile")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -1041,7 +1325,7 @@ public struct ProfileService {
         }
     }
 
-    public func getStatus() async throws -> String {
+    public override func getStatus() async throws -> String {
         var request = URLRequest(url: URL(string: "\(baseURL)/profile/status")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -1056,7 +1340,7 @@ public struct ProfileService {
         }
     }
 
-    public func updateStatus(request body: StatusUpdateRequest) async throws -> UserStatus {
+    public override func updateStatus(request body: StatusUpdateRequest) async throws -> UserStatus {
         var request = URLRequest(url: URL(string: "\(baseURL)/profile/status")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1074,7 +1358,7 @@ public struct ProfileService {
         }
     }
 
-    public func deleteStatus() async throws -> Void {
+    public override func deleteStatus() async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/profile/status")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1091,7 +1375,35 @@ public struct ProfileService {
     }
 }
 
-public struct SearchService {
+open class SearchService {
+    public init() {}
+
+    open func searchChats(query: String? = nil, limit: Int? = nil, cursor: String? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, active: Bool? = nil, chatSubtype: ChatSubtype? = nil, personal: Bool? = nil) async throws -> ListChatsResponse {
+        throw pachcaNotImplemented("Search.searchChats")
+    }
+
+    open func searchChatsAll(query: String? = nil, limit: Int? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, active: Bool? = nil, chatSubtype: ChatSubtype? = nil, personal: Bool? = nil) async throws -> [Chat] {
+        throw pachcaNotImplemented("Search.searchChatsAll")
+    }
+
+    open func searchMessages(query: String? = nil, limit: Int? = nil, cursor: String? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, chatIds: [Int]? = nil, userIds: [Int]? = nil, active: Bool? = nil) async throws -> ListChatMessagesResponse {
+        throw pachcaNotImplemented("Search.searchMessages")
+    }
+
+    open func searchMessagesAll(query: String? = nil, limit: Int? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, chatIds: [Int]? = nil, userIds: [Int]? = nil, active: Bool? = nil) async throws -> [Message] {
+        throw pachcaNotImplemented("Search.searchMessagesAll")
+    }
+
+    open func searchUsers(query: String? = nil, limit: Int? = nil, cursor: String? = nil, sort: SearchSortOrder? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, companyRoles: [UserRole]? = nil) async throws -> ListMembersResponse {
+        throw pachcaNotImplemented("Search.searchUsers")
+    }
+
+    open func searchUsersAll(query: String? = nil, limit: Int? = nil, sort: SearchSortOrder? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, companyRoles: [UserRole]? = nil) async throws -> [User] {
+        throw pachcaNotImplemented("Search.searchUsersAll")
+    }
+}
+
+public final class SearchServiceImpl: SearchService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -1100,9 +1412,10 @@ public struct SearchService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func searchChats(query: String? = nil, limit: Int? = nil, cursor: String? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, active: Bool? = nil, chatSubtype: ChatSubtype? = nil, personal: Bool? = nil) async throws -> ListChatsResponse {
+    public override func searchChats(query: String? = nil, limit: Int? = nil, cursor: String? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, active: Bool? = nil, chatSubtype: ChatSubtype? = nil, personal: Bool? = nil) async throws -> ListChatsResponse {
         var components = URLComponents(string: "\(baseURL)/search/chats")!
         var queryItems: [URLQueryItem] = []
         if let query { queryItems.append(URLQueryItem(name: "query", value: String(query))) }
@@ -1129,7 +1442,7 @@ public struct SearchService {
         }
     }
 
-    public func searchChatsAll(query: String? = nil, limit: Int? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, active: Bool? = nil, chatSubtype: ChatSubtype? = nil, personal: Bool? = nil) async throws -> [Chat] {
+    public override func searchChatsAll(query: String? = nil, limit: Int? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, active: Bool? = nil, chatSubtype: ChatSubtype? = nil, personal: Bool? = nil) async throws -> [Chat] {
         var items: [Chat] = []
         var cursor: String? = nil
         repeat {
@@ -1140,7 +1453,7 @@ public struct SearchService {
         return items
     }
 
-    public func searchMessages(query: String? = nil, limit: Int? = nil, cursor: String? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, chatIds: [Int]? = nil, userIds: [Int]? = nil, active: Bool? = nil) async throws -> ListChatMessagesResponse {
+    public override func searchMessages(query: String? = nil, limit: Int? = nil, cursor: String? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, chatIds: [Int]? = nil, userIds: [Int]? = nil, active: Bool? = nil) async throws -> ListChatMessagesResponse {
         var components = URLComponents(string: "\(baseURL)/search/messages")!
         var queryItems: [URLQueryItem] = []
         if let query { queryItems.append(URLQueryItem(name: "query", value: String(query))) }
@@ -1167,7 +1480,7 @@ public struct SearchService {
         }
     }
 
-    public func searchMessagesAll(query: String? = nil, limit: Int? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, chatIds: [Int]? = nil, userIds: [Int]? = nil, active: Bool? = nil) async throws -> [Message] {
+    public override func searchMessagesAll(query: String? = nil, limit: Int? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, chatIds: [Int]? = nil, userIds: [Int]? = nil, active: Bool? = nil) async throws -> [Message] {
         var items: [Message] = []
         var cursor: String? = nil
         repeat {
@@ -1178,7 +1491,7 @@ public struct SearchService {
         return items
     }
 
-    public func searchUsers(query: String? = nil, limit: Int? = nil, cursor: String? = nil, sort: SearchSortOrder? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, companyRoles: [UserRole]? = nil) async throws -> ListMembersResponse {
+    public override func searchUsers(query: String? = nil, limit: Int? = nil, cursor: String? = nil, sort: SearchSortOrder? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, companyRoles: [UserRole]? = nil) async throws -> ListMembersResponse {
         var components = URLComponents(string: "\(baseURL)/search/users")!
         var queryItems: [URLQueryItem] = []
         if let query { queryItems.append(URLQueryItem(name: "query", value: String(query))) }
@@ -1204,7 +1517,7 @@ public struct SearchService {
         }
     }
 
-    public func searchUsersAll(query: String? = nil, limit: Int? = nil, sort: SearchSortOrder? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, companyRoles: [UserRole]? = nil) async throws -> [User] {
+    public override func searchUsersAll(query: String? = nil, limit: Int? = nil, sort: SearchSortOrder? = nil, order: SortOrder? = nil, createdFrom: String? = nil, createdTo: String? = nil, companyRoles: [UserRole]? = nil) async throws -> [User] {
         var items: [User] = []
         var cursor: String? = nil
         repeat {
@@ -1216,7 +1529,35 @@ public struct SearchService {
     }
 }
 
-public struct TasksService {
+open class TasksService {
+    public init() {}
+
+    open func listTasks(limit: Int? = nil, cursor: String? = nil) async throws -> ListTasksResponse {
+        throw pachcaNotImplemented("Tasks.listTasks")
+    }
+
+    open func listTasksAll(limit: Int? = nil) async throws -> [Task] {
+        throw pachcaNotImplemented("Tasks.listTasksAll")
+    }
+
+    open func getTask(id: Int) async throws -> Task {
+        throw pachcaNotImplemented("Tasks.getTask")
+    }
+
+    open func createTask(request body: TaskCreateRequest) async throws -> Task {
+        throw pachcaNotImplemented("Tasks.createTask")
+    }
+
+    open func updateTask(id: Int, request body: TaskUpdateRequest) async throws -> Task {
+        throw pachcaNotImplemented("Tasks.updateTask")
+    }
+
+    open func deleteTask(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Tasks.deleteTask")
+    }
+}
+
+public final class TasksServiceImpl: TasksService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -1225,9 +1566,10 @@ public struct TasksService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listTasks(limit: Int? = nil, cursor: String? = nil) async throws -> ListTasksResponse {
+    public override func listTasks(limit: Int? = nil, cursor: String? = nil) async throws -> ListTasksResponse {
         var components = URLComponents(string: "\(baseURL)/tasks")!
         var queryItems: [URLQueryItem] = []
         if let limit { queryItems.append(URLQueryItem(name: "limit", value: String(limit))) }
@@ -1247,7 +1589,7 @@ public struct TasksService {
         }
     }
 
-    public func listTasksAll(limit: Int? = nil) async throws -> [Task] {
+    public override func listTasksAll(limit: Int? = nil) async throws -> [Task] {
         var items: [Task] = []
         var cursor: String? = nil
         repeat {
@@ -1258,7 +1600,7 @@ public struct TasksService {
         return items
     }
 
-    public func getTask(id: Int) async throws -> Task {
+    public override func getTask(id: Int) async throws -> Task {
         var request = URLRequest(url: URL(string: "\(baseURL)/tasks/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -1273,7 +1615,7 @@ public struct TasksService {
         }
     }
 
-    public func createTask(request body: TaskCreateRequest) async throws -> Task {
+    public override func createTask(request body: TaskCreateRequest) async throws -> Task {
         var request = URLRequest(url: URL(string: "\(baseURL)/tasks")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1291,7 +1633,7 @@ public struct TasksService {
         }
     }
 
-    public func updateTask(id: Int, request body: TaskUpdateRequest) async throws -> Task {
+    public override func updateTask(id: Int, request body: TaskUpdateRequest) async throws -> Task {
         var request = URLRequest(url: URL(string: "\(baseURL)/tasks/\(id)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1309,7 +1651,7 @@ public struct TasksService {
         }
     }
 
-    public func deleteTask(id: Int) async throws -> Void {
+    public override func deleteTask(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/tasks/\(id)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1326,7 +1668,47 @@ public struct TasksService {
     }
 }
 
-public struct UsersService {
+open class UsersService {
+    public init() {}
+
+    open func listUsers(query: String? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
+        throw pachcaNotImplemented("Users.listUsers")
+    }
+
+    open func listUsersAll(query: String? = nil, limit: Int? = nil) async throws -> [User] {
+        throw pachcaNotImplemented("Users.listUsersAll")
+    }
+
+    open func getUser(id: Int) async throws -> User {
+        throw pachcaNotImplemented("Users.getUser")
+    }
+
+    open func getUserStatus(userId: Int) async throws -> String {
+        throw pachcaNotImplemented("Users.getUserStatus")
+    }
+
+    open func createUser(request body: UserCreateRequest) async throws -> User {
+        throw pachcaNotImplemented("Users.createUser")
+    }
+
+    open func updateUser(id: Int, request body: UserUpdateRequest) async throws -> User {
+        throw pachcaNotImplemented("Users.updateUser")
+    }
+
+    open func updateUserStatus(userId: Int, request body: StatusUpdateRequest) async throws -> UserStatus {
+        throw pachcaNotImplemented("Users.updateUserStatus")
+    }
+
+    open func deleteUser(id: Int) async throws -> Void {
+        throw pachcaNotImplemented("Users.deleteUser")
+    }
+
+    open func deleteUserStatus(userId: Int) async throws -> Void {
+        throw pachcaNotImplemented("Users.deleteUserStatus")
+    }
+}
+
+public final class UsersServiceImpl: UsersService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -1335,9 +1717,10 @@ public struct UsersService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func listUsers(query: String? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
+    public override func listUsers(query: String? = nil, limit: Int? = nil, cursor: String? = nil) async throws -> ListMembersResponse {
         var components = URLComponents(string: "\(baseURL)/users")!
         var queryItems: [URLQueryItem] = []
         if let query { queryItems.append(URLQueryItem(name: "query", value: String(query))) }
@@ -1358,7 +1741,7 @@ public struct UsersService {
         }
     }
 
-    public func listUsersAll(query: String? = nil, limit: Int? = nil) async throws -> [User] {
+    public override func listUsersAll(query: String? = nil, limit: Int? = nil) async throws -> [User] {
         var items: [User] = []
         var cursor: String? = nil
         repeat {
@@ -1369,7 +1752,7 @@ public struct UsersService {
         return items
     }
 
-    public func getUser(id: Int) async throws -> User {
+    public override func getUser(id: Int) async throws -> User {
         var request = URLRequest(url: URL(string: "\(baseURL)/users/\(id)")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -1384,7 +1767,7 @@ public struct UsersService {
         }
     }
 
-    public func getUserStatus(userId: Int) async throws -> String {
+    public override func getUserStatus(userId: Int) async throws -> String {
         var request = URLRequest(url: URL(string: "\(baseURL)/users/\(userId)/status")!)
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
         let (data, urlResponse) = try await dataWithRetry(session: session, for: request)
@@ -1399,7 +1782,7 @@ public struct UsersService {
         }
     }
 
-    public func createUser(request body: UserCreateRequest) async throws -> User {
+    public override func createUser(request body: UserCreateRequest) async throws -> User {
         var request = URLRequest(url: URL(string: "\(baseURL)/users")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1417,7 +1800,7 @@ public struct UsersService {
         }
     }
 
-    public func updateUser(id: Int, request body: UserUpdateRequest) async throws -> User {
+    public override func updateUser(id: Int, request body: UserUpdateRequest) async throws -> User {
         var request = URLRequest(url: URL(string: "\(baseURL)/users/\(id)")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1435,7 +1818,7 @@ public struct UsersService {
         }
     }
 
-    public func updateUserStatus(userId: Int, request body: StatusUpdateRequest) async throws -> UserStatus {
+    public override func updateUserStatus(userId: Int, request body: StatusUpdateRequest) async throws -> UserStatus {
         var request = URLRequest(url: URL(string: "\(baseURL)/users/\(userId)/status")!)
         request.httpMethod = "PUT"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1453,7 +1836,7 @@ public struct UsersService {
         }
     }
 
-    public func deleteUser(id: Int) async throws -> Void {
+    public override func deleteUser(id: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/users/\(id)")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1469,7 +1852,7 @@ public struct UsersService {
         }
     }
 
-    public func deleteUserStatus(userId: Int) async throws -> Void {
+    public override func deleteUserStatus(userId: Int) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/users/\(userId)/status")!)
         request.httpMethod = "DELETE"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1486,7 +1869,15 @@ public struct UsersService {
     }
 }
 
-public struct ViewsService {
+open class ViewsService {
+    public init() {}
+
+    open func openView(request body: OpenViewRequest) async throws -> Void {
+        throw pachcaNotImplemented("Views.openView")
+    }
+}
+
+public final class ViewsServiceImpl: ViewsService {
     let baseURL: String
     let headers: [String: String]
     let session: URLSession
@@ -1495,9 +1886,10 @@ public struct ViewsService {
         self.baseURL = baseURL
         self.headers = headers
         self.session = session
+        super.init()
     }
 
-    public func openView(request body: OpenViewRequest) async throws -> Void {
+    public override func openView(request body: OpenViewRequest) async throws -> Void {
         var request = URLRequest(url: URL(string: "\(baseURL)/views/open")!)
         request.httpMethod = "POST"
         headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
@@ -1528,6 +1920,27 @@ private final class RedirectPreventer: NSObject, URLSessionTaskDelegate {
     }
 }
 
+public struct PachcaServices {
+    public var bots: BotsService? = nil
+    public var chats: ChatsService? = nil
+    public var common: CommonService? = nil
+    public var groupTags: GroupTagsService? = nil
+    public var linkPreviews: LinkPreviewsService? = nil
+    public var members: MembersService? = nil
+    public var messages: MessagesService? = nil
+    public var profile: ProfileService? = nil
+    public var reactions: ReactionsService? = nil
+    public var readMembers: ReadMembersService? = nil
+    public var search: SearchService? = nil
+    public var security: SecurityService? = nil
+    public var tasks: TasksService? = nil
+    public var threads: ThreadsService? = nil
+    public var users: UsersService? = nil
+    public var views: ViewsService? = nil
+
+    public init() {}
+}
+
 public struct PachcaClient {
     public let bots: BotsService
     public let chats: ChatsService
@@ -1546,23 +1959,23 @@ public struct PachcaClient {
     public let users: UsersService
     public let views: ViewsService
 
-    public init(token: String, baseURL: String = "https://api.pachca.com/api/shared/v1") {
+    public init(token: String, baseURL: String = "https://api.pachca.com/api/shared/v1", services: PachcaServices = PachcaServices()) {
         let headers = ["Authorization": "Bearer \(token)"]
-        self.bots = BotsService(baseURL: baseURL, headers: headers)
-        self.chats = ChatsService(baseURL: baseURL, headers: headers)
-        self.common = CommonService(baseURL: baseURL, headers: headers)
-        self.groupTags = GroupTagsService(baseURL: baseURL, headers: headers)
-        self.linkPreviews = LinkPreviewsService(baseURL: baseURL, headers: headers)
-        self.members = MembersService(baseURL: baseURL, headers: headers)
-        self.messages = MessagesService(baseURL: baseURL, headers: headers)
-        self.profile = ProfileService(baseURL: baseURL, headers: headers)
-        self.reactions = ReactionsService(baseURL: baseURL, headers: headers)
-        self.readMembers = ReadMembersService(baseURL: baseURL, headers: headers)
-        self.search = SearchService(baseURL: baseURL, headers: headers)
-        self.security = SecurityService(baseURL: baseURL, headers: headers)
-        self.tasks = TasksService(baseURL: baseURL, headers: headers)
-        self.threads = ThreadsService(baseURL: baseURL, headers: headers)
-        self.users = UsersService(baseURL: baseURL, headers: headers)
-        self.views = ViewsService(baseURL: baseURL, headers: headers)
+        self.bots = services.bots ?? BotsServiceImpl(baseURL: baseURL, headers: headers)
+        self.chats = services.chats ?? ChatsServiceImpl(baseURL: baseURL, headers: headers)
+        self.common = services.common ?? CommonServiceImpl(baseURL: baseURL, headers: headers)
+        self.groupTags = services.groupTags ?? GroupTagsServiceImpl(baseURL: baseURL, headers: headers)
+        self.linkPreviews = services.linkPreviews ?? LinkPreviewsServiceImpl(baseURL: baseURL, headers: headers)
+        self.members = services.members ?? MembersServiceImpl(baseURL: baseURL, headers: headers)
+        self.messages = services.messages ?? MessagesServiceImpl(baseURL: baseURL, headers: headers)
+        self.profile = services.profile ?? ProfileServiceImpl(baseURL: baseURL, headers: headers)
+        self.reactions = services.reactions ?? ReactionsServiceImpl(baseURL: baseURL, headers: headers)
+        self.readMembers = services.readMembers ?? ReadMembersServiceImpl(baseURL: baseURL, headers: headers)
+        self.search = services.search ?? SearchServiceImpl(baseURL: baseURL, headers: headers)
+        self.security = services.security ?? SecurityServiceImpl(baseURL: baseURL, headers: headers)
+        self.tasks = services.tasks ?? TasksServiceImpl(baseURL: baseURL, headers: headers)
+        self.threads = services.threads ?? ThreadsServiceImpl(baseURL: baseURL, headers: headers)
+        self.users = services.users ?? UsersServiceImpl(baseURL: baseURL, headers: headers)
+        self.views = services.views ?? ViewsServiceImpl(baseURL: baseURL, headers: headers)
     }
 }

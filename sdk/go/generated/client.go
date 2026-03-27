@@ -50,12 +50,27 @@ func doWithRetry(client *http.Client, req *http.Request) (*http.Response, error)
 	}
 }
 
-type SecurityService struct {
+type SecurityService interface {
+	GetAuditEvents(ctx context.Context, params *GetAuditEventsParams) (*GetAuditEventsResponse, error)
+	GetAuditEventsAll(ctx context.Context, params *GetAuditEventsParams) ([]AuditEvent, error)
+}
+
+type SecurityServiceStub struct{}
+
+func (s *SecurityServiceStub) GetAuditEvents(ctx context.Context, params *GetAuditEventsParams) (*GetAuditEventsResponse, error) {
+	return nil, fmt.Errorf("Security.getAuditEvents is not implemented")
+}
+
+func (s *SecurityServiceStub) GetAuditEventsAll(ctx context.Context, params *GetAuditEventsParams) ([]AuditEvent, error) {
+	return nil, fmt.Errorf("Security.getAuditEventsAll is not implemented")
+}
+
+type SecurityServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *SecurityService) GetAuditEvents(ctx context.Context, params *GetAuditEventsParams) (*GetAuditEventsResponse, error) {
+func (s *SecurityServiceImpl) GetAuditEvents(ctx context.Context, params *GetAuditEventsParams) (*GetAuditEventsResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/audit_events", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -116,7 +131,7 @@ func (s *SecurityService) GetAuditEvents(ctx context.Context, params *GetAuditEv
 	}
 }
 
-func (s *SecurityService) GetAuditEventsAll(ctx context.Context, params *GetAuditEventsParams) ([]AuditEvent, error) {
+func (s *SecurityServiceImpl) GetAuditEventsAll(ctx context.Context, params *GetAuditEventsParams) ([]AuditEvent, error) {
 	if params == nil {
 		params = &GetAuditEventsParams{}
 	}
@@ -136,12 +151,37 @@ func (s *SecurityService) GetAuditEventsAll(ctx context.Context, params *GetAudi
 	}
 }
 
-type BotsService struct {
+type BotsService interface {
+	GetWebhookEvents(ctx context.Context, params *GetWebhookEventsParams) (*GetWebhookEventsResponse, error)
+	GetWebhookEventsAll(ctx context.Context, params *GetWebhookEventsParams) ([]WebhookEvent, error)
+	UpdateBot(ctx context.Context, id int32, request BotUpdateRequest) (*BotResponse, error)
+	DeleteWebhookEvent(ctx context.Context, id string) error
+}
+
+type BotsServiceStub struct{}
+
+func (s *BotsServiceStub) GetWebhookEvents(ctx context.Context, params *GetWebhookEventsParams) (*GetWebhookEventsResponse, error) {
+	return nil, fmt.Errorf("Bots.getWebhookEvents is not implemented")
+}
+
+func (s *BotsServiceStub) GetWebhookEventsAll(ctx context.Context, params *GetWebhookEventsParams) ([]WebhookEvent, error) {
+	return nil, fmt.Errorf("Bots.getWebhookEventsAll is not implemented")
+}
+
+func (s *BotsServiceStub) UpdateBot(ctx context.Context, id int32, request BotUpdateRequest) (*BotResponse, error) {
+	return nil, fmt.Errorf("Bots.updateBot is not implemented")
+}
+
+func (s *BotsServiceStub) DeleteWebhookEvent(ctx context.Context, id string) error {
+	return fmt.Errorf("Bots.deleteWebhookEvent is not implemented")
+}
+
+type BotsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *BotsService) GetWebhookEvents(ctx context.Context, params *GetWebhookEventsParams) (*GetWebhookEventsResponse, error) {
+func (s *BotsServiceImpl) GetWebhookEvents(ctx context.Context, params *GetWebhookEventsParams) (*GetWebhookEventsResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/webhooks/events", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -181,7 +221,7 @@ func (s *BotsService) GetWebhookEvents(ctx context.Context, params *GetWebhookEv
 	}
 }
 
-func (s *BotsService) GetWebhookEventsAll(ctx context.Context, params *GetWebhookEventsParams) ([]WebhookEvent, error) {
+func (s *BotsServiceImpl) GetWebhookEventsAll(ctx context.Context, params *GetWebhookEventsParams) ([]WebhookEvent, error) {
 	if params == nil {
 		params = &GetWebhookEventsParams{}
 	}
@@ -201,7 +241,7 @@ func (s *BotsService) GetWebhookEventsAll(ctx context.Context, params *GetWebhoo
 	}
 }
 
-func (s *BotsService) UpdateBot(ctx context.Context, id int32, request BotUpdateRequest) (*BotResponse, error) {
+func (s *BotsServiceImpl) UpdateBot(ctx context.Context, id int32, request BotUpdateRequest) (*BotResponse, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -236,7 +276,7 @@ func (s *BotsService) UpdateBot(ctx context.Context, id int32, request BotUpdate
 	}
 }
 
-func (s *BotsService) DeleteWebhookEvent(ctx context.Context, id string) error {
+func (s *BotsServiceImpl) DeleteWebhookEvent(ctx context.Context, id string) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/webhooks/events/%v", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -260,12 +300,52 @@ func (s *BotsService) DeleteWebhookEvent(ctx context.Context, id string) error {
 	}
 }
 
-type ChatsService struct {
+type ChatsService interface {
+	ListChats(ctx context.Context, params *ListChatsParams) (*ListChatsResponse, error)
+	ListChatsAll(ctx context.Context, params *ListChatsParams) ([]Chat, error)
+	GetChat(ctx context.Context, id int32) (*Chat, error)
+	CreateChat(ctx context.Context, request ChatCreateRequest) (*Chat, error)
+	UpdateChat(ctx context.Context, id int32, request ChatUpdateRequest) (*Chat, error)
+	ArchiveChat(ctx context.Context, id int32) error
+	UnarchiveChat(ctx context.Context, id int32) error
+}
+
+type ChatsServiceStub struct{}
+
+func (s *ChatsServiceStub) ListChats(ctx context.Context, params *ListChatsParams) (*ListChatsResponse, error) {
+	return nil, fmt.Errorf("Chats.listChats is not implemented")
+}
+
+func (s *ChatsServiceStub) ListChatsAll(ctx context.Context, params *ListChatsParams) ([]Chat, error) {
+	return nil, fmt.Errorf("Chats.listChatsAll is not implemented")
+}
+
+func (s *ChatsServiceStub) GetChat(ctx context.Context, id int32) (*Chat, error) {
+	return nil, fmt.Errorf("Chats.getChat is not implemented")
+}
+
+func (s *ChatsServiceStub) CreateChat(ctx context.Context, request ChatCreateRequest) (*Chat, error) {
+	return nil, fmt.Errorf("Chats.createChat is not implemented")
+}
+
+func (s *ChatsServiceStub) UpdateChat(ctx context.Context, id int32, request ChatUpdateRequest) (*Chat, error) {
+	return nil, fmt.Errorf("Chats.updateChat is not implemented")
+}
+
+func (s *ChatsServiceStub) ArchiveChat(ctx context.Context, id int32) error {
+	return fmt.Errorf("Chats.archiveChat is not implemented")
+}
+
+func (s *ChatsServiceStub) UnarchiveChat(ctx context.Context, id int32) error {
+	return fmt.Errorf("Chats.unarchiveChat is not implemented")
+}
+
+type ChatsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *ChatsService) ListChats(ctx context.Context, params *ListChatsParams) (*ListChatsResponse, error) {
+func (s *ChatsServiceImpl) ListChats(ctx context.Context, params *ListChatsParams) (*ListChatsResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/chats", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -320,7 +400,7 @@ func (s *ChatsService) ListChats(ctx context.Context, params *ListChatsParams) (
 	}
 }
 
-func (s *ChatsService) ListChatsAll(ctx context.Context, params *ListChatsParams) ([]Chat, error) {
+func (s *ChatsServiceImpl) ListChatsAll(ctx context.Context, params *ListChatsParams) ([]Chat, error) {
 	if params == nil {
 		params = &ListChatsParams{}
 	}
@@ -340,7 +420,7 @@ func (s *ChatsService) ListChatsAll(ctx context.Context, params *ListChatsParams
 	}
 }
 
-func (s *ChatsService) GetChat(ctx context.Context, id int32) (*Chat, error) {
+func (s *ChatsServiceImpl) GetChat(ctx context.Context, id int32) (*Chat, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/chats/%v", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -370,7 +450,7 @@ func (s *ChatsService) GetChat(ctx context.Context, id int32) (*Chat, error) {
 	}
 }
 
-func (s *ChatsService) CreateChat(ctx context.Context, request ChatCreateRequest) (*Chat, error) {
+func (s *ChatsServiceImpl) CreateChat(ctx context.Context, request ChatCreateRequest) (*Chat, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -405,7 +485,7 @@ func (s *ChatsService) CreateChat(ctx context.Context, request ChatCreateRequest
 	}
 }
 
-func (s *ChatsService) UpdateChat(ctx context.Context, id int32, request ChatUpdateRequest) (*Chat, error) {
+func (s *ChatsServiceImpl) UpdateChat(ctx context.Context, id int32, request ChatUpdateRequest) (*Chat, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -440,7 +520,7 @@ func (s *ChatsService) UpdateChat(ctx context.Context, id int32, request ChatUpd
 	}
 }
 
-func (s *ChatsService) ArchiveChat(ctx context.Context, id int32) error {
+func (s *ChatsServiceImpl) ArchiveChat(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "PUT", fmt.Sprintf("%s/chats/%v/archive", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -464,7 +544,7 @@ func (s *ChatsService) ArchiveChat(ctx context.Context, id int32) error {
 	}
 }
 
-func (s *ChatsService) UnarchiveChat(ctx context.Context, id int32) error {
+func (s *ChatsServiceImpl) UnarchiveChat(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "PUT", fmt.Sprintf("%s/chats/%v/unarchive", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -488,12 +568,42 @@ func (s *ChatsService) UnarchiveChat(ctx context.Context, id int32) error {
 	}
 }
 
-type CommonService struct {
+type CommonService interface {
+	DownloadExport(ctx context.Context, id int32) (string, error)
+	ListProperties(ctx context.Context, params ListPropertiesParams) (*ListPropertiesResponse, error)
+	RequestExport(ctx context.Context, request ExportRequest) error
+	UploadFile(ctx context.Context, directUrl string, request FileUploadRequest) error
+	GetUploadParams(ctx context.Context) (*UploadParams, error)
+}
+
+type CommonServiceStub struct{}
+
+func (s *CommonServiceStub) DownloadExport(ctx context.Context, id int32) (string, error) {
+	return "", fmt.Errorf("Common.downloadExport is not implemented")
+}
+
+func (s *CommonServiceStub) ListProperties(ctx context.Context, params ListPropertiesParams) (*ListPropertiesResponse, error) {
+	return nil, fmt.Errorf("Common.listProperties is not implemented")
+}
+
+func (s *CommonServiceStub) RequestExport(ctx context.Context, request ExportRequest) error {
+	return fmt.Errorf("Common.requestExport is not implemented")
+}
+
+func (s *CommonServiceStub) UploadFile(ctx context.Context, directUrl string, request FileUploadRequest) error {
+	return fmt.Errorf("Common.uploadFile is not implemented")
+}
+
+func (s *CommonServiceStub) GetUploadParams(ctx context.Context) (*UploadParams, error) {
+	return nil, fmt.Errorf("Common.getUploadParams is not implemented")
+}
+
+type CommonServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *CommonService) DownloadExport(ctx context.Context, id int32) (string, error) {
+func (s *CommonServiceImpl) DownloadExport(ctx context.Context, id int32) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/chats/exports/%v", s.baseURL, id), nil)
 	if err != nil {
 		return "", err
@@ -521,7 +631,7 @@ func (s *CommonService) DownloadExport(ctx context.Context, id int32) (string, e
 	}
 }
 
-func (s *CommonService) ListProperties(ctx context.Context, params ListPropertiesParams) (*ListPropertiesResponse, error) {
+func (s *CommonServiceImpl) ListProperties(ctx context.Context, params ListPropertiesParams) (*ListPropertiesResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/custom_properties", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -556,7 +666,7 @@ func (s *CommonService) ListProperties(ctx context.Context, params ListPropertie
 	}
 }
 
-func (s *CommonService) RequestExport(ctx context.Context, request ExportRequest) error {
+func (s *CommonServiceImpl) RequestExport(ctx context.Context, request ExportRequest) error {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -585,7 +695,7 @@ func (s *CommonService) RequestExport(ctx context.Context, request ExportRequest
 	}
 }
 
-func (s *CommonService) UploadFile(ctx context.Context, directUrl string, request FileUploadRequest) error {
+func (s *CommonServiceImpl) UploadFile(ctx context.Context, directUrl string, request FileUploadRequest) error {
 	pr, pw := io.Pipe()
 	writer := multipart.NewWriter(pw)
 	go func() {
@@ -629,7 +739,7 @@ func (s *CommonService) UploadFile(ctx context.Context, directUrl string, reques
 	}
 }
 
-func (s *CommonService) GetUploadParams(ctx context.Context) (*UploadParams, error) {
+func (s *CommonServiceImpl) GetUploadParams(ctx context.Context) (*UploadParams, error) {
 	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/uploads", s.baseURL), nil)
 	if err != nil {
 		return nil, err
@@ -657,12 +767,57 @@ func (s *CommonService) GetUploadParams(ctx context.Context) (*UploadParams, err
 	}
 }
 
-type MembersService struct {
+type MembersService interface {
+	ListMembers(ctx context.Context, id int32, params *ListMembersParams) (*ListMembersResponse, error)
+	ListMembersAll(ctx context.Context, id int32, params *ListMembersParams) ([]User, error)
+	AddTags(ctx context.Context, id int32, groupTagIds []int32) error
+	AddMembers(ctx context.Context, id int32, request AddMembersRequest) error
+	UpdateMemberRole(ctx context.Context, id int32, userId int32, role ChatMemberRole) error
+	RemoveTag(ctx context.Context, id int32, tagId int32) error
+	LeaveChat(ctx context.Context, id int32) error
+	RemoveMember(ctx context.Context, id int32, userId int32) error
+}
+
+type MembersServiceStub struct{}
+
+func (s *MembersServiceStub) ListMembers(ctx context.Context, id int32, params *ListMembersParams) (*ListMembersResponse, error) {
+	return nil, fmt.Errorf("Members.listMembers is not implemented")
+}
+
+func (s *MembersServiceStub) ListMembersAll(ctx context.Context, id int32, params *ListMembersParams) ([]User, error) {
+	return nil, fmt.Errorf("Members.listMembersAll is not implemented")
+}
+
+func (s *MembersServiceStub) AddTags(ctx context.Context, id int32, groupTagIds []int32) error {
+	return fmt.Errorf("Members.addTags is not implemented")
+}
+
+func (s *MembersServiceStub) AddMembers(ctx context.Context, id int32, request AddMembersRequest) error {
+	return fmt.Errorf("Members.addMembers is not implemented")
+}
+
+func (s *MembersServiceStub) UpdateMemberRole(ctx context.Context, id int32, userId int32, role ChatMemberRole) error {
+	return fmt.Errorf("Members.updateMemberRole is not implemented")
+}
+
+func (s *MembersServiceStub) RemoveTag(ctx context.Context, id int32, tagId int32) error {
+	return fmt.Errorf("Members.removeTag is not implemented")
+}
+
+func (s *MembersServiceStub) LeaveChat(ctx context.Context, id int32) error {
+	return fmt.Errorf("Members.leaveChat is not implemented")
+}
+
+func (s *MembersServiceStub) RemoveMember(ctx context.Context, id int32, userId int32) error {
+	return fmt.Errorf("Members.removeMember is not implemented")
+}
+
+type MembersServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *MembersService) ListMembers(ctx context.Context, id int32, params *ListMembersParams) (*ListMembersResponse, error) {
+func (s *MembersServiceImpl) ListMembers(ctx context.Context, id int32, params *ListMembersParams) (*ListMembersResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/chats/%v/members", s.baseURL, id))
 	if err != nil {
 		return nil, err
@@ -705,7 +860,7 @@ func (s *MembersService) ListMembers(ctx context.Context, id int32, params *List
 	}
 }
 
-func (s *MembersService) ListMembersAll(ctx context.Context, id int32, params *ListMembersParams) ([]User, error) {
+func (s *MembersServiceImpl) ListMembersAll(ctx context.Context, id int32, params *ListMembersParams) ([]User, error) {
 	if params == nil {
 		params = &ListMembersParams{}
 	}
@@ -725,7 +880,7 @@ func (s *MembersService) ListMembersAll(ctx context.Context, id int32, params *L
 	}
 }
 
-func (s *MembersService) AddTags(ctx context.Context, id int32, groupTagIds []int32) error {
+func (s *MembersServiceImpl) AddTags(ctx context.Context, id int32, groupTagIds []int32) error {
 	body, err := json.Marshal(map[string]any{"group_tag_ids": groupTagIds})
 	if err != nil {
 		return err
@@ -754,7 +909,7 @@ func (s *MembersService) AddTags(ctx context.Context, id int32, groupTagIds []in
 	}
 }
 
-func (s *MembersService) AddMembers(ctx context.Context, id int32, request AddMembersRequest) error {
+func (s *MembersServiceImpl) AddMembers(ctx context.Context, id int32, request AddMembersRequest) error {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -783,7 +938,7 @@ func (s *MembersService) AddMembers(ctx context.Context, id int32, request AddMe
 	}
 }
 
-func (s *MembersService) UpdateMemberRole(ctx context.Context, id int32, userId int32, role ChatMemberRole) error {
+func (s *MembersServiceImpl) UpdateMemberRole(ctx context.Context, id int32, userId int32, role ChatMemberRole) error {
 	body, err := json.Marshal(map[string]any{"role": role})
 	if err != nil {
 		return err
@@ -812,7 +967,7 @@ func (s *MembersService) UpdateMemberRole(ctx context.Context, id int32, userId 
 	}
 }
 
-func (s *MembersService) RemoveTag(ctx context.Context, id int32, tagId int32) error {
+func (s *MembersServiceImpl) RemoveTag(ctx context.Context, id int32, tagId int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/chats/%v/group_tags/%v", s.baseURL, id, tagId), nil)
 	if err != nil {
 		return err
@@ -836,7 +991,7 @@ func (s *MembersService) RemoveTag(ctx context.Context, id int32, tagId int32) e
 	}
 }
 
-func (s *MembersService) LeaveChat(ctx context.Context, id int32) error {
+func (s *MembersServiceImpl) LeaveChat(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/chats/%v/leave", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -860,7 +1015,7 @@ func (s *MembersService) LeaveChat(ctx context.Context, id int32) error {
 	}
 }
 
-func (s *MembersService) RemoveMember(ctx context.Context, id int32, userId int32) error {
+func (s *MembersServiceImpl) RemoveMember(ctx context.Context, id int32, userId int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/chats/%v/members/%v", s.baseURL, id, userId), nil)
 	if err != nil {
 		return err
@@ -884,12 +1039,57 @@ func (s *MembersService) RemoveMember(ctx context.Context, id int32, userId int3
 	}
 }
 
-type GroupTagsService struct {
+type GroupTagsService interface {
+	ListTags(ctx context.Context, params *ListTagsParams) (*ListTagsResponse, error)
+	ListTagsAll(ctx context.Context, params *ListTagsParams) ([]GroupTag, error)
+	GetTag(ctx context.Context, id int32) (*GroupTag, error)
+	GetTagUsers(ctx context.Context, id int32, params *GetTagUsersParams) (*ListMembersResponse, error)
+	GetTagUsersAll(ctx context.Context, id int32, params *GetTagUsersParams) ([]User, error)
+	CreateTag(ctx context.Context, request GroupTagRequest) (*GroupTag, error)
+	UpdateTag(ctx context.Context, id int32, request GroupTagRequest) (*GroupTag, error)
+	DeleteTag(ctx context.Context, id int32) error
+}
+
+type GroupTagsServiceStub struct{}
+
+func (s *GroupTagsServiceStub) ListTags(ctx context.Context, params *ListTagsParams) (*ListTagsResponse, error) {
+	return nil, fmt.Errorf("Group tags.listTags is not implemented")
+}
+
+func (s *GroupTagsServiceStub) ListTagsAll(ctx context.Context, params *ListTagsParams) ([]GroupTag, error) {
+	return nil, fmt.Errorf("Group tags.listTagsAll is not implemented")
+}
+
+func (s *GroupTagsServiceStub) GetTag(ctx context.Context, id int32) (*GroupTag, error) {
+	return nil, fmt.Errorf("Group tags.getTag is not implemented")
+}
+
+func (s *GroupTagsServiceStub) GetTagUsers(ctx context.Context, id int32, params *GetTagUsersParams) (*ListMembersResponse, error) {
+	return nil, fmt.Errorf("Group tags.getTagUsers is not implemented")
+}
+
+func (s *GroupTagsServiceStub) GetTagUsersAll(ctx context.Context, id int32, params *GetTagUsersParams) ([]User, error) {
+	return nil, fmt.Errorf("Group tags.getTagUsersAll is not implemented")
+}
+
+func (s *GroupTagsServiceStub) CreateTag(ctx context.Context, request GroupTagRequest) (*GroupTag, error) {
+	return nil, fmt.Errorf("Group tags.createTag is not implemented")
+}
+
+func (s *GroupTagsServiceStub) UpdateTag(ctx context.Context, id int32, request GroupTagRequest) (*GroupTag, error) {
+	return nil, fmt.Errorf("Group tags.updateTag is not implemented")
+}
+
+func (s *GroupTagsServiceStub) DeleteTag(ctx context.Context, id int32) error {
+	return fmt.Errorf("Group tags.deleteTag is not implemented")
+}
+
+type GroupTagsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *GroupTagsService) ListTags(ctx context.Context, params *ListTagsParams) (*ListTagsResponse, error) {
+func (s *GroupTagsServiceImpl) ListTags(ctx context.Context, params *ListTagsParams) (*ListTagsResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/group_tags", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -932,7 +1132,7 @@ func (s *GroupTagsService) ListTags(ctx context.Context, params *ListTagsParams)
 	}
 }
 
-func (s *GroupTagsService) ListTagsAll(ctx context.Context, params *ListTagsParams) ([]GroupTag, error) {
+func (s *GroupTagsServiceImpl) ListTagsAll(ctx context.Context, params *ListTagsParams) ([]GroupTag, error) {
 	if params == nil {
 		params = &ListTagsParams{}
 	}
@@ -952,7 +1152,7 @@ func (s *GroupTagsService) ListTagsAll(ctx context.Context, params *ListTagsPara
 	}
 }
 
-func (s *GroupTagsService) GetTag(ctx context.Context, id int32) (*GroupTag, error) {
+func (s *GroupTagsServiceImpl) GetTag(ctx context.Context, id int32) (*GroupTag, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/group_tags/%v", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -982,7 +1182,7 @@ func (s *GroupTagsService) GetTag(ctx context.Context, id int32) (*GroupTag, err
 	}
 }
 
-func (s *GroupTagsService) GetTagUsers(ctx context.Context, id int32, params *GetTagUsersParams) (*ListMembersResponse, error) {
+func (s *GroupTagsServiceImpl) GetTagUsers(ctx context.Context, id int32, params *GetTagUsersParams) (*ListMembersResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/group_tags/%v/users", s.baseURL, id))
 	if err != nil {
 		return nil, err
@@ -1022,7 +1222,7 @@ func (s *GroupTagsService) GetTagUsers(ctx context.Context, id int32, params *Ge
 	}
 }
 
-func (s *GroupTagsService) GetTagUsersAll(ctx context.Context, id int32, params *GetTagUsersParams) ([]User, error) {
+func (s *GroupTagsServiceImpl) GetTagUsersAll(ctx context.Context, id int32, params *GetTagUsersParams) ([]User, error) {
 	if params == nil {
 		params = &GetTagUsersParams{}
 	}
@@ -1042,7 +1242,7 @@ func (s *GroupTagsService) GetTagUsersAll(ctx context.Context, id int32, params 
 	}
 }
 
-func (s *GroupTagsService) CreateTag(ctx context.Context, request GroupTagRequest) (*GroupTag, error) {
+func (s *GroupTagsServiceImpl) CreateTag(ctx context.Context, request GroupTagRequest) (*GroupTag, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -1077,7 +1277,7 @@ func (s *GroupTagsService) CreateTag(ctx context.Context, request GroupTagReques
 	}
 }
 
-func (s *GroupTagsService) UpdateTag(ctx context.Context, id int32, request GroupTagRequest) (*GroupTag, error) {
+func (s *GroupTagsServiceImpl) UpdateTag(ctx context.Context, id int32, request GroupTagRequest) (*GroupTag, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -1112,7 +1312,7 @@ func (s *GroupTagsService) UpdateTag(ctx context.Context, id int32, request Grou
 	}
 }
 
-func (s *GroupTagsService) DeleteTag(ctx context.Context, id int32) error {
+func (s *GroupTagsServiceImpl) DeleteTag(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/group_tags/%v", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -1136,12 +1336,57 @@ func (s *GroupTagsService) DeleteTag(ctx context.Context, id int32) error {
 	}
 }
 
-type MessagesService struct {
+type MessagesService interface {
+	ListChatMessages(ctx context.Context, params ListChatMessagesParams) (*ListChatMessagesResponse, error)
+	ListChatMessagesAll(ctx context.Context, params *ListChatMessagesParams) ([]Message, error)
+	GetMessage(ctx context.Context, id int32) (*Message, error)
+	CreateMessage(ctx context.Context, request MessageCreateRequest) (*Message, error)
+	PinMessage(ctx context.Context, id int32) error
+	UpdateMessage(ctx context.Context, id int32, request MessageUpdateRequest) (*Message, error)
+	DeleteMessage(ctx context.Context, id int32) error
+	UnpinMessage(ctx context.Context, id int32) error
+}
+
+type MessagesServiceStub struct{}
+
+func (s *MessagesServiceStub) ListChatMessages(ctx context.Context, params ListChatMessagesParams) (*ListChatMessagesResponse, error) {
+	return nil, fmt.Errorf("Messages.listChatMessages is not implemented")
+}
+
+func (s *MessagesServiceStub) ListChatMessagesAll(ctx context.Context, params *ListChatMessagesParams) ([]Message, error) {
+	return nil, fmt.Errorf("Messages.listChatMessagesAll is not implemented")
+}
+
+func (s *MessagesServiceStub) GetMessage(ctx context.Context, id int32) (*Message, error) {
+	return nil, fmt.Errorf("Messages.getMessage is not implemented")
+}
+
+func (s *MessagesServiceStub) CreateMessage(ctx context.Context, request MessageCreateRequest) (*Message, error) {
+	return nil, fmt.Errorf("Messages.createMessage is not implemented")
+}
+
+func (s *MessagesServiceStub) PinMessage(ctx context.Context, id int32) error {
+	return fmt.Errorf("Messages.pinMessage is not implemented")
+}
+
+func (s *MessagesServiceStub) UpdateMessage(ctx context.Context, id int32, request MessageUpdateRequest) (*Message, error) {
+	return nil, fmt.Errorf("Messages.updateMessage is not implemented")
+}
+
+func (s *MessagesServiceStub) DeleteMessage(ctx context.Context, id int32) error {
+	return fmt.Errorf("Messages.deleteMessage is not implemented")
+}
+
+func (s *MessagesServiceStub) UnpinMessage(ctx context.Context, id int32) error {
+	return fmt.Errorf("Messages.unpinMessage is not implemented")
+}
+
+type MessagesServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *MessagesService) ListChatMessages(ctx context.Context, params ListChatMessagesParams) (*ListChatMessagesResponse, error) {
+func (s *MessagesServiceImpl) ListChatMessages(ctx context.Context, params ListChatMessagesParams) (*ListChatMessagesResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/messages", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -1185,7 +1430,7 @@ func (s *MessagesService) ListChatMessages(ctx context.Context, params ListChatM
 	}
 }
 
-func (s *MessagesService) ListChatMessagesAll(ctx context.Context, params *ListChatMessagesParams) ([]Message, error) {
+func (s *MessagesServiceImpl) ListChatMessagesAll(ctx context.Context, params *ListChatMessagesParams) ([]Message, error) {
 	if params == nil {
 		params = &ListChatMessagesParams{}
 	}
@@ -1205,7 +1450,7 @@ func (s *MessagesService) ListChatMessagesAll(ctx context.Context, params *ListC
 	}
 }
 
-func (s *MessagesService) GetMessage(ctx context.Context, id int32) (*Message, error) {
+func (s *MessagesServiceImpl) GetMessage(ctx context.Context, id int32) (*Message, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/messages/%v", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -1235,7 +1480,7 @@ func (s *MessagesService) GetMessage(ctx context.Context, id int32) (*Message, e
 	}
 }
 
-func (s *MessagesService) CreateMessage(ctx context.Context, request MessageCreateRequest) (*Message, error) {
+func (s *MessagesServiceImpl) CreateMessage(ctx context.Context, request MessageCreateRequest) (*Message, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -1270,7 +1515,7 @@ func (s *MessagesService) CreateMessage(ctx context.Context, request MessageCrea
 	}
 }
 
-func (s *MessagesService) PinMessage(ctx context.Context, id int32) error {
+func (s *MessagesServiceImpl) PinMessage(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/messages/%v/pin", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -1294,7 +1539,7 @@ func (s *MessagesService) PinMessage(ctx context.Context, id int32) error {
 	}
 }
 
-func (s *MessagesService) UpdateMessage(ctx context.Context, id int32, request MessageUpdateRequest) (*Message, error) {
+func (s *MessagesServiceImpl) UpdateMessage(ctx context.Context, id int32, request MessageUpdateRequest) (*Message, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -1329,7 +1574,7 @@ func (s *MessagesService) UpdateMessage(ctx context.Context, id int32, request M
 	}
 }
 
-func (s *MessagesService) DeleteMessage(ctx context.Context, id int32) error {
+func (s *MessagesServiceImpl) DeleteMessage(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/messages/%v", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -1353,7 +1598,7 @@ func (s *MessagesService) DeleteMessage(ctx context.Context, id int32) error {
 	}
 }
 
-func (s *MessagesService) UnpinMessage(ctx context.Context, id int32) error {
+func (s *MessagesServiceImpl) UnpinMessage(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/messages/%v/pin", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -1377,12 +1622,22 @@ func (s *MessagesService) UnpinMessage(ctx context.Context, id int32) error {
 	}
 }
 
-type LinkPreviewsService struct {
+type LinkPreviewsService interface {
+	CreateLinkPreviews(ctx context.Context, id int32, request LinkPreviewsRequest) error
+}
+
+type LinkPreviewsServiceStub struct{}
+
+func (s *LinkPreviewsServiceStub) CreateLinkPreviews(ctx context.Context, id int32, request LinkPreviewsRequest) error {
+	return fmt.Errorf("Link Previews.createLinkPreviews is not implemented")
+}
+
+type LinkPreviewsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *LinkPreviewsService) CreateLinkPreviews(ctx context.Context, id int32, request LinkPreviewsRequest) error {
+func (s *LinkPreviewsServiceImpl) CreateLinkPreviews(ctx context.Context, id int32, request LinkPreviewsRequest) error {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -1411,12 +1666,37 @@ func (s *LinkPreviewsService) CreateLinkPreviews(ctx context.Context, id int32, 
 	}
 }
 
-type ReactionsService struct {
+type ReactionsService interface {
+	ListReactions(ctx context.Context, id int32, params *ListReactionsParams) (*ListReactionsResponse, error)
+	ListReactionsAll(ctx context.Context, id int32, params *ListReactionsParams) ([]Reaction, error)
+	AddReaction(ctx context.Context, id int32, request ReactionRequest) (*Reaction, error)
+	RemoveReaction(ctx context.Context, id int32, params RemoveReactionParams) error
+}
+
+type ReactionsServiceStub struct{}
+
+func (s *ReactionsServiceStub) ListReactions(ctx context.Context, id int32, params *ListReactionsParams) (*ListReactionsResponse, error) {
+	return nil, fmt.Errorf("Reactions.listReactions is not implemented")
+}
+
+func (s *ReactionsServiceStub) ListReactionsAll(ctx context.Context, id int32, params *ListReactionsParams) ([]Reaction, error) {
+	return nil, fmt.Errorf("Reactions.listReactionsAll is not implemented")
+}
+
+func (s *ReactionsServiceStub) AddReaction(ctx context.Context, id int32, request ReactionRequest) (*Reaction, error) {
+	return nil, fmt.Errorf("Reactions.addReaction is not implemented")
+}
+
+func (s *ReactionsServiceStub) RemoveReaction(ctx context.Context, id int32, params RemoveReactionParams) error {
+	return fmt.Errorf("Reactions.removeReaction is not implemented")
+}
+
+type ReactionsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *ReactionsService) ListReactions(ctx context.Context, id int32, params *ListReactionsParams) (*ListReactionsResponse, error) {
+func (s *ReactionsServiceImpl) ListReactions(ctx context.Context, id int32, params *ListReactionsParams) (*ListReactionsResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/messages/%v/reactions", s.baseURL, id))
 	if err != nil {
 		return nil, err
@@ -1456,7 +1736,7 @@ func (s *ReactionsService) ListReactions(ctx context.Context, id int32, params *
 	}
 }
 
-func (s *ReactionsService) ListReactionsAll(ctx context.Context, id int32, params *ListReactionsParams) ([]Reaction, error) {
+func (s *ReactionsServiceImpl) ListReactionsAll(ctx context.Context, id int32, params *ListReactionsParams) ([]Reaction, error) {
 	if params == nil {
 		params = &ListReactionsParams{}
 	}
@@ -1476,7 +1756,7 @@ func (s *ReactionsService) ListReactionsAll(ctx context.Context, id int32, param
 	}
 }
 
-func (s *ReactionsService) AddReaction(ctx context.Context, id int32, request ReactionRequest) (*Reaction, error) {
+func (s *ReactionsServiceImpl) AddReaction(ctx context.Context, id int32, request ReactionRequest) (*Reaction, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -1509,7 +1789,7 @@ func (s *ReactionsService) AddReaction(ctx context.Context, id int32, request Re
 	}
 }
 
-func (s *ReactionsService) RemoveReaction(ctx context.Context, id int32, params RemoveReactionParams) error {
+func (s *ReactionsServiceImpl) RemoveReaction(ctx context.Context, id int32, params RemoveReactionParams) error {
 	u, err := url.Parse(fmt.Sprintf("%s/messages/%v/reactions", s.baseURL, id))
 	if err != nil {
 		return err
@@ -1543,12 +1823,22 @@ func (s *ReactionsService) RemoveReaction(ctx context.Context, id int32, params 
 	}
 }
 
-type ReadMembersService struct {
+type ReadMembersService interface {
+	ListReadMembers(ctx context.Context, id int32, params *ListReadMembersParams) (*any, error)
+}
+
+type ReadMembersServiceStub struct{}
+
+func (s *ReadMembersServiceStub) ListReadMembers(ctx context.Context, id int32, params *ListReadMembersParams) (*any, error) {
+	return nil, fmt.Errorf("Read members.listReadMembers is not implemented")
+}
+
+type ReadMembersServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *ReadMembersService) ListReadMembers(ctx context.Context, id int32, params *ListReadMembersParams) (*any, error) {
+func (s *ReadMembersServiceImpl) ListReadMembers(ctx context.Context, id int32, params *ListReadMembersParams) (*any, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/messages/%v/read_member_ids", s.baseURL, id))
 	if err != nil {
 		return nil, err
@@ -1588,12 +1878,27 @@ func (s *ReadMembersService) ListReadMembers(ctx context.Context, id int32, para
 	}
 }
 
-type ThreadsService struct {
+type ThreadsService interface {
+	GetThread(ctx context.Context, id int32) (*Thread, error)
+	CreateThread(ctx context.Context, id int32) (*Thread, error)
+}
+
+type ThreadsServiceStub struct{}
+
+func (s *ThreadsServiceStub) GetThread(ctx context.Context, id int32) (*Thread, error) {
+	return nil, fmt.Errorf("Threads.getThread is not implemented")
+}
+
+func (s *ThreadsServiceStub) CreateThread(ctx context.Context, id int32) (*Thread, error) {
+	return nil, fmt.Errorf("Threads.createThread is not implemented")
+}
+
+type ThreadsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *ThreadsService) GetThread(ctx context.Context, id int32) (*Thread, error) {
+func (s *ThreadsServiceImpl) GetThread(ctx context.Context, id int32) (*Thread, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/threads/%v", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -1623,7 +1928,7 @@ func (s *ThreadsService) GetThread(ctx context.Context, id int32) (*Thread, erro
 	}
 }
 
-func (s *ThreadsService) CreateThread(ctx context.Context, id int32) (*Thread, error) {
+func (s *ThreadsServiceImpl) CreateThread(ctx context.Context, id int32) (*Thread, error) {
 	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/messages/%v/thread", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -1653,12 +1958,42 @@ func (s *ThreadsService) CreateThread(ctx context.Context, id int32) (*Thread, e
 	}
 }
 
-type ProfileService struct {
+type ProfileService interface {
+	GetTokenInfo(ctx context.Context) (*AccessTokenInfo, error)
+	GetProfile(ctx context.Context) (*User, error)
+	GetStatus(ctx context.Context) (*any, error)
+	UpdateStatus(ctx context.Context, request StatusUpdateRequest) (*UserStatus, error)
+	DeleteStatus(ctx context.Context) error
+}
+
+type ProfileServiceStub struct{}
+
+func (s *ProfileServiceStub) GetTokenInfo(ctx context.Context) (*AccessTokenInfo, error) {
+	return nil, fmt.Errorf("Profile.getTokenInfo is not implemented")
+}
+
+func (s *ProfileServiceStub) GetProfile(ctx context.Context) (*User, error) {
+	return nil, fmt.Errorf("Profile.getProfile is not implemented")
+}
+
+func (s *ProfileServiceStub) GetStatus(ctx context.Context) (*any, error) {
+	return nil, fmt.Errorf("Profile.getStatus is not implemented")
+}
+
+func (s *ProfileServiceStub) UpdateStatus(ctx context.Context, request StatusUpdateRequest) (*UserStatus, error) {
+	return nil, fmt.Errorf("Profile.updateStatus is not implemented")
+}
+
+func (s *ProfileServiceStub) DeleteStatus(ctx context.Context) error {
+	return fmt.Errorf("Profile.deleteStatus is not implemented")
+}
+
+type ProfileServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *ProfileService) GetTokenInfo(ctx context.Context) (*AccessTokenInfo, error) {
+func (s *ProfileServiceImpl) GetTokenInfo(ctx context.Context) (*AccessTokenInfo, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/oauth/token/info", s.baseURL), nil)
 	if err != nil {
 		return nil, err
@@ -1688,7 +2023,7 @@ func (s *ProfileService) GetTokenInfo(ctx context.Context) (*AccessTokenInfo, er
 	}
 }
 
-func (s *ProfileService) GetProfile(ctx context.Context) (*User, error) {
+func (s *ProfileServiceImpl) GetProfile(ctx context.Context) (*User, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/profile", s.baseURL), nil)
 	if err != nil {
 		return nil, err
@@ -1718,7 +2053,7 @@ func (s *ProfileService) GetProfile(ctx context.Context) (*User, error) {
 	}
 }
 
-func (s *ProfileService) GetStatus(ctx context.Context) (*any, error) {
+func (s *ProfileServiceImpl) GetStatus(ctx context.Context) (*any, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/profile/status", s.baseURL), nil)
 	if err != nil {
 		return nil, err
@@ -1746,7 +2081,7 @@ func (s *ProfileService) GetStatus(ctx context.Context) (*any, error) {
 	}
 }
 
-func (s *ProfileService) UpdateStatus(ctx context.Context, request StatusUpdateRequest) (*UserStatus, error) {
+func (s *ProfileServiceImpl) UpdateStatus(ctx context.Context, request StatusUpdateRequest) (*UserStatus, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -1781,7 +2116,7 @@ func (s *ProfileService) UpdateStatus(ctx context.Context, request StatusUpdateR
 	}
 }
 
-func (s *ProfileService) DeleteStatus(ctx context.Context) error {
+func (s *ProfileServiceImpl) DeleteStatus(ctx context.Context) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/profile/status", s.baseURL), nil)
 	if err != nil {
 		return err
@@ -1805,12 +2140,47 @@ func (s *ProfileService) DeleteStatus(ctx context.Context) error {
 	}
 }
 
-type SearchService struct {
+type SearchService interface {
+	SearchChats(ctx context.Context, params *SearchChatsParams) (*ListChatsResponse, error)
+	SearchChatsAll(ctx context.Context, params *SearchChatsParams) ([]Chat, error)
+	SearchMessages(ctx context.Context, params *SearchMessagesParams) (*ListChatMessagesResponse, error)
+	SearchMessagesAll(ctx context.Context, params *SearchMessagesParams) ([]Message, error)
+	SearchUsers(ctx context.Context, params *SearchUsersParams) (*ListMembersResponse, error)
+	SearchUsersAll(ctx context.Context, params *SearchUsersParams) ([]User, error)
+}
+
+type SearchServiceStub struct{}
+
+func (s *SearchServiceStub) SearchChats(ctx context.Context, params *SearchChatsParams) (*ListChatsResponse, error) {
+	return nil, fmt.Errorf("Search.searchChats is not implemented")
+}
+
+func (s *SearchServiceStub) SearchChatsAll(ctx context.Context, params *SearchChatsParams) ([]Chat, error) {
+	return nil, fmt.Errorf("Search.searchChatsAll is not implemented")
+}
+
+func (s *SearchServiceStub) SearchMessages(ctx context.Context, params *SearchMessagesParams) (*ListChatMessagesResponse, error) {
+	return nil, fmt.Errorf("Search.searchMessages is not implemented")
+}
+
+func (s *SearchServiceStub) SearchMessagesAll(ctx context.Context, params *SearchMessagesParams) ([]Message, error) {
+	return nil, fmt.Errorf("Search.searchMessagesAll is not implemented")
+}
+
+func (s *SearchServiceStub) SearchUsers(ctx context.Context, params *SearchUsersParams) (*ListMembersResponse, error) {
+	return nil, fmt.Errorf("Search.searchUsers is not implemented")
+}
+
+func (s *SearchServiceStub) SearchUsersAll(ctx context.Context, params *SearchUsersParams) ([]User, error) {
+	return nil, fmt.Errorf("Search.searchUsersAll is not implemented")
+}
+
+type SearchServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *SearchService) SearchChats(ctx context.Context, params *SearchChatsParams) (*ListChatsResponse, error) {
+func (s *SearchServiceImpl) SearchChats(ctx context.Context, params *SearchChatsParams) (*ListChatsResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/search/chats", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -1871,7 +2241,7 @@ func (s *SearchService) SearchChats(ctx context.Context, params *SearchChatsPara
 	}
 }
 
-func (s *SearchService) SearchChatsAll(ctx context.Context, params *SearchChatsParams) ([]Chat, error) {
+func (s *SearchServiceImpl) SearchChatsAll(ctx context.Context, params *SearchChatsParams) ([]Chat, error) {
 	if params == nil {
 		params = &SearchChatsParams{}
 	}
@@ -1891,7 +2261,7 @@ func (s *SearchService) SearchChatsAll(ctx context.Context, params *SearchChatsP
 	}
 }
 
-func (s *SearchService) SearchMessages(ctx context.Context, params *SearchMessagesParams) (*ListChatMessagesResponse, error) {
+func (s *SearchServiceImpl) SearchMessages(ctx context.Context, params *SearchMessagesParams) (*ListChatMessagesResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/search/messages", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -1952,7 +2322,7 @@ func (s *SearchService) SearchMessages(ctx context.Context, params *SearchMessag
 	}
 }
 
-func (s *SearchService) SearchMessagesAll(ctx context.Context, params *SearchMessagesParams) ([]Message, error) {
+func (s *SearchServiceImpl) SearchMessagesAll(ctx context.Context, params *SearchMessagesParams) ([]Message, error) {
 	if params == nil {
 		params = &SearchMessagesParams{}
 	}
@@ -1972,7 +2342,7 @@ func (s *SearchService) SearchMessagesAll(ctx context.Context, params *SearchMes
 	}
 }
 
-func (s *SearchService) SearchUsers(ctx context.Context, params *SearchUsersParams) (*ListMembersResponse, error) {
+func (s *SearchServiceImpl) SearchUsers(ctx context.Context, params *SearchUsersParams) (*ListMembersResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/search/users", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -2030,7 +2400,7 @@ func (s *SearchService) SearchUsers(ctx context.Context, params *SearchUsersPara
 	}
 }
 
-func (s *SearchService) SearchUsersAll(ctx context.Context, params *SearchUsersParams) ([]User, error) {
+func (s *SearchServiceImpl) SearchUsersAll(ctx context.Context, params *SearchUsersParams) ([]User, error) {
 	if params == nil {
 		params = &SearchUsersParams{}
 	}
@@ -2050,12 +2420,47 @@ func (s *SearchService) SearchUsersAll(ctx context.Context, params *SearchUsersP
 	}
 }
 
-type TasksService struct {
+type TasksService interface {
+	ListTasks(ctx context.Context, params *ListTasksParams) (*ListTasksResponse, error)
+	ListTasksAll(ctx context.Context, params *ListTasksParams) ([]Task, error)
+	GetTask(ctx context.Context, id int32) (*Task, error)
+	CreateTask(ctx context.Context, request TaskCreateRequest) (*Task, error)
+	UpdateTask(ctx context.Context, id int32, request TaskUpdateRequest) (*Task, error)
+	DeleteTask(ctx context.Context, id int32) error
+}
+
+type TasksServiceStub struct{}
+
+func (s *TasksServiceStub) ListTasks(ctx context.Context, params *ListTasksParams) (*ListTasksResponse, error) {
+	return nil, fmt.Errorf("Tasks.listTasks is not implemented")
+}
+
+func (s *TasksServiceStub) ListTasksAll(ctx context.Context, params *ListTasksParams) ([]Task, error) {
+	return nil, fmt.Errorf("Tasks.listTasksAll is not implemented")
+}
+
+func (s *TasksServiceStub) GetTask(ctx context.Context, id int32) (*Task, error) {
+	return nil, fmt.Errorf("Tasks.getTask is not implemented")
+}
+
+func (s *TasksServiceStub) CreateTask(ctx context.Context, request TaskCreateRequest) (*Task, error) {
+	return nil, fmt.Errorf("Tasks.createTask is not implemented")
+}
+
+func (s *TasksServiceStub) UpdateTask(ctx context.Context, id int32, request TaskUpdateRequest) (*Task, error) {
+	return nil, fmt.Errorf("Tasks.updateTask is not implemented")
+}
+
+func (s *TasksServiceStub) DeleteTask(ctx context.Context, id int32) error {
+	return fmt.Errorf("Tasks.deleteTask is not implemented")
+}
+
+type TasksServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *TasksService) ListTasks(ctx context.Context, params *ListTasksParams) (*ListTasksResponse, error) {
+func (s *TasksServiceImpl) ListTasks(ctx context.Context, params *ListTasksParams) (*ListTasksResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/tasks", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -2095,7 +2500,7 @@ func (s *TasksService) ListTasks(ctx context.Context, params *ListTasksParams) (
 	}
 }
 
-func (s *TasksService) ListTasksAll(ctx context.Context, params *ListTasksParams) ([]Task, error) {
+func (s *TasksServiceImpl) ListTasksAll(ctx context.Context, params *ListTasksParams) ([]Task, error) {
 	if params == nil {
 		params = &ListTasksParams{}
 	}
@@ -2115,7 +2520,7 @@ func (s *TasksService) ListTasksAll(ctx context.Context, params *ListTasksParams
 	}
 }
 
-func (s *TasksService) GetTask(ctx context.Context, id int32) (*Task, error) {
+func (s *TasksServiceImpl) GetTask(ctx context.Context, id int32) (*Task, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/tasks/%v", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -2145,7 +2550,7 @@ func (s *TasksService) GetTask(ctx context.Context, id int32) (*Task, error) {
 	}
 }
 
-func (s *TasksService) CreateTask(ctx context.Context, request TaskCreateRequest) (*Task, error) {
+func (s *TasksServiceImpl) CreateTask(ctx context.Context, request TaskCreateRequest) (*Task, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -2180,7 +2585,7 @@ func (s *TasksService) CreateTask(ctx context.Context, request TaskCreateRequest
 	}
 }
 
-func (s *TasksService) UpdateTask(ctx context.Context, id int32, request TaskUpdateRequest) (*Task, error) {
+func (s *TasksServiceImpl) UpdateTask(ctx context.Context, id int32, request TaskUpdateRequest) (*Task, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -2215,7 +2620,7 @@ func (s *TasksService) UpdateTask(ctx context.Context, id int32, request TaskUpd
 	}
 }
 
-func (s *TasksService) DeleteTask(ctx context.Context, id int32) error {
+func (s *TasksServiceImpl) DeleteTask(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/tasks/%v", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -2239,12 +2644,62 @@ func (s *TasksService) DeleteTask(ctx context.Context, id int32) error {
 	}
 }
 
-type UsersService struct {
+type UsersService interface {
+	ListUsers(ctx context.Context, params *ListUsersParams) (*ListMembersResponse, error)
+	ListUsersAll(ctx context.Context, params *ListUsersParams) ([]User, error)
+	GetUser(ctx context.Context, id int32) (*User, error)
+	GetUserStatus(ctx context.Context, userId int32) (*any, error)
+	CreateUser(ctx context.Context, request UserCreateRequest) (*User, error)
+	UpdateUser(ctx context.Context, id int32, request UserUpdateRequest) (*User, error)
+	UpdateUserStatus(ctx context.Context, userId int32, request StatusUpdateRequest) (*UserStatus, error)
+	DeleteUser(ctx context.Context, id int32) error
+	DeleteUserStatus(ctx context.Context, userId int32) error
+}
+
+type UsersServiceStub struct{}
+
+func (s *UsersServiceStub) ListUsers(ctx context.Context, params *ListUsersParams) (*ListMembersResponse, error) {
+	return nil, fmt.Errorf("Users.listUsers is not implemented")
+}
+
+func (s *UsersServiceStub) ListUsersAll(ctx context.Context, params *ListUsersParams) ([]User, error) {
+	return nil, fmt.Errorf("Users.listUsersAll is not implemented")
+}
+
+func (s *UsersServiceStub) GetUser(ctx context.Context, id int32) (*User, error) {
+	return nil, fmt.Errorf("Users.getUser is not implemented")
+}
+
+func (s *UsersServiceStub) GetUserStatus(ctx context.Context, userId int32) (*any, error) {
+	return nil, fmt.Errorf("Users.getUserStatus is not implemented")
+}
+
+func (s *UsersServiceStub) CreateUser(ctx context.Context, request UserCreateRequest) (*User, error) {
+	return nil, fmt.Errorf("Users.createUser is not implemented")
+}
+
+func (s *UsersServiceStub) UpdateUser(ctx context.Context, id int32, request UserUpdateRequest) (*User, error) {
+	return nil, fmt.Errorf("Users.updateUser is not implemented")
+}
+
+func (s *UsersServiceStub) UpdateUserStatus(ctx context.Context, userId int32, request StatusUpdateRequest) (*UserStatus, error) {
+	return nil, fmt.Errorf("Users.updateUserStatus is not implemented")
+}
+
+func (s *UsersServiceStub) DeleteUser(ctx context.Context, id int32) error {
+	return fmt.Errorf("Users.deleteUser is not implemented")
+}
+
+func (s *UsersServiceStub) DeleteUserStatus(ctx context.Context, userId int32) error {
+	return fmt.Errorf("Users.deleteUserStatus is not implemented")
+}
+
+type UsersServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *UsersService) ListUsers(ctx context.Context, params *ListUsersParams) (*ListMembersResponse, error) {
+func (s *UsersServiceImpl) ListUsers(ctx context.Context, params *ListUsersParams) (*ListMembersResponse, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/users", s.baseURL))
 	if err != nil {
 		return nil, err
@@ -2287,7 +2742,7 @@ func (s *UsersService) ListUsers(ctx context.Context, params *ListUsersParams) (
 	}
 }
 
-func (s *UsersService) ListUsersAll(ctx context.Context, params *ListUsersParams) ([]User, error) {
+func (s *UsersServiceImpl) ListUsersAll(ctx context.Context, params *ListUsersParams) ([]User, error) {
 	if params == nil {
 		params = &ListUsersParams{}
 	}
@@ -2307,7 +2762,7 @@ func (s *UsersService) ListUsersAll(ctx context.Context, params *ListUsersParams
 	}
 }
 
-func (s *UsersService) GetUser(ctx context.Context, id int32) (*User, error) {
+func (s *UsersServiceImpl) GetUser(ctx context.Context, id int32) (*User, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/users/%v", s.baseURL, id), nil)
 	if err != nil {
 		return nil, err
@@ -2337,7 +2792,7 @@ func (s *UsersService) GetUser(ctx context.Context, id int32) (*User, error) {
 	}
 }
 
-func (s *UsersService) GetUserStatus(ctx context.Context, userId int32) (*any, error) {
+func (s *UsersServiceImpl) GetUserStatus(ctx context.Context, userId int32) (*any, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/users/%v/status", s.baseURL, userId), nil)
 	if err != nil {
 		return nil, err
@@ -2365,7 +2820,7 @@ func (s *UsersService) GetUserStatus(ctx context.Context, userId int32) (*any, e
 	}
 }
 
-func (s *UsersService) CreateUser(ctx context.Context, request UserCreateRequest) (*User, error) {
+func (s *UsersServiceImpl) CreateUser(ctx context.Context, request UserCreateRequest) (*User, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -2400,7 +2855,7 @@ func (s *UsersService) CreateUser(ctx context.Context, request UserCreateRequest
 	}
 }
 
-func (s *UsersService) UpdateUser(ctx context.Context, id int32, request UserUpdateRequest) (*User, error) {
+func (s *UsersServiceImpl) UpdateUser(ctx context.Context, id int32, request UserUpdateRequest) (*User, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -2435,7 +2890,7 @@ func (s *UsersService) UpdateUser(ctx context.Context, id int32, request UserUpd
 	}
 }
 
-func (s *UsersService) UpdateUserStatus(ctx context.Context, userId int32, request StatusUpdateRequest) (*UserStatus, error) {
+func (s *UsersServiceImpl) UpdateUserStatus(ctx context.Context, userId int32, request StatusUpdateRequest) (*UserStatus, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -2470,7 +2925,7 @@ func (s *UsersService) UpdateUserStatus(ctx context.Context, userId int32, reque
 	}
 }
 
-func (s *UsersService) DeleteUser(ctx context.Context, id int32) error {
+func (s *UsersServiceImpl) DeleteUser(ctx context.Context, id int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/users/%v", s.baseURL, id), nil)
 	if err != nil {
 		return err
@@ -2494,7 +2949,7 @@ func (s *UsersService) DeleteUser(ctx context.Context, id int32) error {
 	}
 }
 
-func (s *UsersService) DeleteUserStatus(ctx context.Context, userId int32) error {
+func (s *UsersServiceImpl) DeleteUserStatus(ctx context.Context, userId int32) error {
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fmt.Sprintf("%s/users/%v/status", s.baseURL, userId), nil)
 	if err != nil {
 		return err
@@ -2518,12 +2973,22 @@ func (s *UsersService) DeleteUserStatus(ctx context.Context, userId int32) error
 	}
 }
 
-type ViewsService struct {
+type ViewsService interface {
+	OpenView(ctx context.Context, request OpenViewRequest) error
+}
+
+type ViewsServiceStub struct{}
+
+func (s *ViewsServiceStub) OpenView(ctx context.Context, request OpenViewRequest) error {
+	return fmt.Errorf("Views.openView is not implemented")
+}
+
+type ViewsServiceImpl struct {
 	baseURL string
 	client  *http.Client
 }
 
-func (s *ViewsService) OpenView(ctx context.Context, request OpenViewRequest) error {
+func (s *ViewsServiceImpl) OpenView(ctx context.Context, request OpenViewRequest) error {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -2553,29 +3018,121 @@ func (s *ViewsService) OpenView(ctx context.Context, request OpenViewRequest) er
 }
 
 type PachcaClient struct {
-	Bots         *BotsService
-	Chats        *ChatsService
-	Common       *CommonService
-	GroupTags    *GroupTagsService
-	LinkPreviews *LinkPreviewsService
-	Members      *MembersService
-	Messages     *MessagesService
-	Profile      *ProfileService
-	Reactions    *ReactionsService
-	ReadMembers  *ReadMembersService
-	Search       *SearchService
-	Security     *SecurityService
-	Tasks        *TasksService
-	Threads      *ThreadsService
-	Users        *UsersService
-	Views        *ViewsService
+	Bots         BotsService
+	Chats        ChatsService
+	Common       CommonService
+	GroupTags    GroupTagsService
+	LinkPreviews LinkPreviewsService
+	Members      MembersService
+	Messages     MessagesService
+	Profile      ProfileService
+	Reactions    ReactionsService
+	ReadMembers  ReadMembersService
+	Search       SearchService
+	Security     SecurityService
+	Tasks        TasksService
+	Threads      ThreadsService
+	Users        UsersService
+	Views        ViewsService
 }
+
+type clientConfig struct {
+	baseURL string
+	bots BotsService
+	chats ChatsService
+	common CommonService
+	groupTags GroupTagsService
+	linkPreviews LinkPreviewsService
+	members MembersService
+	messages MessagesService
+	profile ProfileService
+	reactions ReactionsService
+	readMembers ReadMembersService
+	search SearchService
+	security SecurityService
+	tasks TasksService
+	threads ThreadsService
+	users UsersService
+	views ViewsService
+}
+
+type ClientOption func(*clientConfig)
 
 const DefaultBaseURL = "https://api.pachca.com/api/shared/v1"
 
-func NewPachcaClient(token string, baseURL ...string) *PachcaClient {
-	url := DefaultBaseURL
-	if len(baseURL) > 0 { url = baseURL[0] }
+func WithBaseURL(baseURL string) ClientOption {
+	return func(cfg *clientConfig) { cfg.baseURL = baseURL }
+}
+
+func WithBots(service BotsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.bots = service }
+}
+
+func WithChats(service ChatsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.chats = service }
+}
+
+func WithCommon(service CommonService) ClientOption {
+	return func(cfg *clientConfig) { cfg.common = service }
+}
+
+func WithGroupTags(service GroupTagsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.groupTags = service }
+}
+
+func WithLinkPreviews(service LinkPreviewsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.linkPreviews = service }
+}
+
+func WithMembers(service MembersService) ClientOption {
+	return func(cfg *clientConfig) { cfg.members = service }
+}
+
+func WithMessages(service MessagesService) ClientOption {
+	return func(cfg *clientConfig) { cfg.messages = service }
+}
+
+func WithProfile(service ProfileService) ClientOption {
+	return func(cfg *clientConfig) { cfg.profile = service }
+}
+
+func WithReactions(service ReactionsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.reactions = service }
+}
+
+func WithReadMembers(service ReadMembersService) ClientOption {
+	return func(cfg *clientConfig) { cfg.readMembers = service }
+}
+
+func WithSearch(service SearchService) ClientOption {
+	return func(cfg *clientConfig) { cfg.search = service }
+}
+
+func WithSecurity(service SecurityService) ClientOption {
+	return func(cfg *clientConfig) { cfg.security = service }
+}
+
+func WithTasks(service TasksService) ClientOption {
+	return func(cfg *clientConfig) { cfg.tasks = service }
+}
+
+func WithThreads(service ThreadsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.threads = service }
+}
+
+func WithUsers(service UsersService) ClientOption {
+	return func(cfg *clientConfig) { cfg.users = service }
+}
+
+func WithViews(service ViewsService) ClientOption {
+	return func(cfg *clientConfig) { cfg.views = service }
+}
+
+func NewPachcaClient(token string, opts ...ClientOption) *PachcaClient {
+	cfg := clientConfig{baseURL: DefaultBaseURL}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
 	client := &http.Client{
 		Transport: &authTransport{token: token, base: http.DefaultTransport},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -2583,21 +3140,21 @@ func NewPachcaClient(token string, baseURL ...string) *PachcaClient {
 		},
 	}
 	return &PachcaClient{
-		Bots        : &BotsService{baseURL: url, client: client},
-		Chats       : &ChatsService{baseURL: url, client: client},
-		Common      : &CommonService{baseURL: url, client: client},
-		GroupTags   : &GroupTagsService{baseURL: url, client: client},
-		LinkPreviews: &LinkPreviewsService{baseURL: url, client: client},
-		Members     : &MembersService{baseURL: url, client: client},
-		Messages    : &MessagesService{baseURL: url, client: client},
-		Profile     : &ProfileService{baseURL: url, client: client},
-		Reactions   : &ReactionsService{baseURL: url, client: client},
-		ReadMembers : &ReadMembersService{baseURL: url, client: client},
-		Search      : &SearchService{baseURL: url, client: client},
-		Security    : &SecurityService{baseURL: url, client: client},
-		Tasks       : &TasksService{baseURL: url, client: client},
-		Threads     : &ThreadsService{baseURL: url, client: client},
-		Users       : &UsersService{baseURL: url, client: client},
-		Views       : &ViewsService{baseURL: url, client: client},
+		Bots        : func() BotsService { if cfg.bots != nil { return cfg.bots }; return &BotsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Chats       : func() ChatsService { if cfg.chats != nil { return cfg.chats }; return &ChatsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Common      : func() CommonService { if cfg.common != nil { return cfg.common }; return &CommonServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		GroupTags   : func() GroupTagsService { if cfg.groupTags != nil { return cfg.groupTags }; return &GroupTagsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		LinkPreviews: func() LinkPreviewsService { if cfg.linkPreviews != nil { return cfg.linkPreviews }; return &LinkPreviewsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Members     : func() MembersService { if cfg.members != nil { return cfg.members }; return &MembersServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Messages    : func() MessagesService { if cfg.messages != nil { return cfg.messages }; return &MessagesServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Profile     : func() ProfileService { if cfg.profile != nil { return cfg.profile }; return &ProfileServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Reactions   : func() ReactionsService { if cfg.reactions != nil { return cfg.reactions }; return &ReactionsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		ReadMembers : func() ReadMembersService { if cfg.readMembers != nil { return cfg.readMembers }; return &ReadMembersServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Search      : func() SearchService { if cfg.search != nil { return cfg.search }; return &SearchServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Security    : func() SecurityService { if cfg.security != nil { return cfg.security }; return &SecurityServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Tasks       : func() TasksService { if cfg.tasks != nil { return cfg.tasks }; return &TasksServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Threads     : func() ThreadsService { if cfg.threads != nil { return cfg.threads }; return &ThreadsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Users       : func() UsersService { if cfg.users != nil { return cfg.users }; return &UsersServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+		Views       : func() ViewsService { if cfg.views != nil { return cfg.views }; return &ViewsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
 	}
 }
