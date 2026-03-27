@@ -13,7 +13,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-abstract class SearchService {
+open class SearchService {
     open suspend fun searchMessages(
         query: String,
         chatIds: List<Int>? = null,
@@ -46,13 +46,13 @@ class SearchServiceImpl internal constructor(
 ) : SearchService() {
     override suspend fun searchMessages(
         query: String,
-        chatIds: List<Int>? = null,
-        userIds: List<Int>? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        sort: SearchSort? = null,
-        limit: Int? = null,
-        cursor: String? = null,
+        chatIds: List<Int>?,
+        userIds: List<Int>?,
+        createdFrom: String?,
+        createdTo: String?,
+        sort: SearchSort?,
+        limit: Int?,
+        cursor: String?,
     ): SearchMessagesResponse {
         val response = client.get("$baseUrl/search/messages") {
             parameter("query", query)
@@ -73,12 +73,12 @@ class SearchServiceImpl internal constructor(
 
     override suspend fun searchMessagesAll(
         query: String,
-        chatIds: List<Int>? = null,
-        userIds: List<Int>? = null,
-        createdFrom: String? = null,
-        createdTo: String? = null,
-        sort: SearchSort? = null,
-        limit: Int? = null,
+        chatIds: List<Int>?,
+        userIds: List<Int>?,
+        createdFrom: String?,
+        createdTo: String?,
+        sort: SearchSort?,
+        limit: Int?,
     ): List<MessageSearchResult> {
         val items = mutableListOf<MessageSearchResult>()
         var cursor: String? = null
@@ -100,11 +100,11 @@ class SearchServiceImpl internal constructor(
     }
 }
 
-data class PachcaServices(
-    val search: SearchService? = null
-)
-
-class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/shared/v1", services: PachcaServices = PachcaServices()) : Closeable {
+class PachcaClient(
+    token: String,
+    baseUrl: String = "https://api.pachca.com/api/shared/v1",
+    search: SearchService? = null
+) : Closeable {
     private val client = HttpClient {
         expectSuccess = false
         install(ContentNegotiation) {
@@ -123,7 +123,7 @@ class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/
         }
     }
 
-    val search: SearchService = services.search ?: SearchServiceImpl(baseUrl, client)
+    val search: SearchService = search ?: SearchServiceImpl(baseUrl, client)
 
     override fun close() {
         client.close()

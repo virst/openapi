@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace Pachca.Sdk;
 
-public abstract class SecurityService
+public class SecurityService
 {
 
     public virtual async System.Threading.Tasks.Task<GetAuditEventsResponse> GetAuditEventsAsync(
@@ -125,7 +125,7 @@ public sealed class SecurityServiceImpl : SecurityService
     }
 }
 
-public abstract class BotsService
+public class BotsService
 {
 
     public virtual async System.Threading.Tasks.Task<GetWebhookEventsResponse> GetWebhookEventsAsync(
@@ -247,7 +247,7 @@ public sealed class BotsServiceImpl : BotsService
     }
 }
 
-public abstract class ChatsService
+public class ChatsService
 {
 
     public virtual async System.Threading.Tasks.Task<ListChatsResponse> ListChatsAsync(
@@ -466,7 +466,7 @@ public sealed class ChatsServiceImpl : ChatsService
     }
 }
 
-public abstract class CommonService
+public class CommonService
 {
 
     public virtual async System.Threading.Tasks.Task<string> DownloadExportAsync(int id, CancellationToken cancellationToken = default)
@@ -612,7 +612,7 @@ public sealed class CommonServiceImpl : CommonService
     }
 }
 
-public abstract class MembersService
+public class MembersService
 {
 
     public virtual async System.Threading.Tasks.Task<ListMembersResponse> ListMembersAsync(
@@ -862,7 +862,7 @@ public sealed class MembersServiceImpl : MembersService
     }
 }
 
-public abstract class GroupTagsService
+public class GroupTagsService
 {
 
     public virtual async System.Threading.Tasks.Task<ListTagsResponse> ListTagsAsync(
@@ -1094,7 +1094,7 @@ public sealed class GroupTagsServiceImpl : GroupTagsService
     }
 }
 
-public abstract class MessagesService
+public class MessagesService
 {
 
     public virtual async System.Threading.Tasks.Task<ListChatMessagesResponse> ListChatMessagesAsync(
@@ -1316,7 +1316,7 @@ public sealed class MessagesServiceImpl : MessagesService
     }
 }
 
-public abstract class LinkPreviewsService
+public class LinkPreviewsService
 {
 
     public virtual async System.Threading.Tasks.Task CreateLinkPreviewsAsync(
@@ -1361,7 +1361,7 @@ public sealed class LinkPreviewsServiceImpl : LinkPreviewsService
     }
 }
 
-public abstract class ReactionsService
+public class ReactionsService
 {
 
     public virtual async System.Threading.Tasks.Task<ListReactionsResponse> ListReactionsAsync(
@@ -1499,7 +1499,7 @@ public sealed class ReactionsServiceImpl : ReactionsService
     }
 }
 
-public abstract class ReadMembersService
+public class ReadMembersService
 {
 
     public virtual async System.Threading.Tasks.Task<object> ListReadMembersAsync(
@@ -1550,7 +1550,7 @@ public sealed class ReadMembersServiceImpl : ReadMembersService
     }
 }
 
-public abstract class ThreadsService
+public class ThreadsService
 {
 
     public virtual async System.Threading.Tasks.Task<Pachca.Sdk.Thread> GetThreadAsync(int id, CancellationToken cancellationToken = default)
@@ -1610,7 +1610,7 @@ public sealed class ThreadsServiceImpl : ThreadsService
     }
 }
 
-public abstract class ProfileService
+public class ProfileService
 {
 
     public virtual async System.Threading.Tasks.Task<AccessTokenInfo> GetTokenInfoAsync(CancellationToken cancellationToken = default)
@@ -1737,7 +1737,7 @@ public sealed class ProfileServiceImpl : ProfileService
     }
 }
 
-public abstract class SearchService
+public class SearchService
 {
 
     public virtual async System.Threading.Tasks.Task<ListChatsResponse> SearchChatsAsync(
@@ -2038,7 +2038,7 @@ public sealed class SearchServiceImpl : SearchService
     }
 }
 
-public abstract class TasksService
+public class TasksService
 {
 
     public virtual async System.Threading.Tasks.Task<ListTasksResponse> ListTasksAsync(
@@ -2205,7 +2205,7 @@ public sealed class TasksServiceImpl : TasksService
     }
 }
 
-public abstract class UsersService
+public class UsersService
 {
 
     public virtual async System.Threading.Tasks.Task<ListMembersResponse> ListUsersAsync(
@@ -2451,7 +2451,7 @@ public sealed class UsersServiceImpl : UsersService
     }
 }
 
-public abstract class ViewsService
+public class ViewsService
 {
 
     public virtual async System.Threading.Tasks.Task OpenViewAsync(OpenViewRequest request, CancellationToken cancellationToken = default)
@@ -2494,26 +2494,6 @@ public sealed class PachcaClient : IDisposable
 {
     private readonly HttpClient _client;
 
-    public sealed class Services
-    {
-        public BotsService? Bots { get; init; }
-        public ChatsService? Chats { get; init; }
-        public CommonService? Common { get; init; }
-        public GroupTagsService? GroupTags { get; init; }
-        public LinkPreviewsService? LinkPreviews { get; init; }
-        public MembersService? Members { get; init; }
-        public MessagesService? Messages { get; init; }
-        public ProfileService? Profile { get; init; }
-        public ReactionsService? Reactions { get; init; }
-        public ReadMembersService? ReadMembers { get; init; }
-        public SearchService? Search { get; init; }
-        public SecurityService? Security { get; init; }
-        public TasksService? Tasks { get; init; }
-        public ThreadsService? Threads { get; init; }
-        public UsersService? Users { get; init; }
-        public ViewsService? Views { get; init; }
-    }
-
     public BotsService Bots { get; }
     public ChatsService Chats { get; }
     public CommonService Common { get; }
@@ -2531,9 +2511,8 @@ public sealed class PachcaClient : IDisposable
     public UsersService Users { get; }
     public ViewsService Views { get; }
 
-    public PachcaClient(string token, string baseUrl = "https://api.pachca.com/api/shared/v1", Services? services = null)
+    public PachcaClient(string token, string baseUrl = "https://api.pachca.com/api/shared/v1", BotsService? bots = null, ChatsService? chats = null, CommonService? common = null, GroupTagsService? groupTags = null, LinkPreviewsService? linkPreviews = null, MembersService? members = null, MessagesService? messages = null, ProfileService? profile = null, ReactionsService? reactions = null, ReadMembersService? readMembers = null, SearchService? search = null, SecurityService? security = null, TasksService? tasks = null, ThreadsService? threads = null, UsersService? users = null, ViewsService? views = null)
     {
-        services ??= new Services();
         var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = false,
@@ -2542,22 +2521,22 @@ public sealed class PachcaClient : IDisposable
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", token);
 
-        Bots = services.Bots ?? new BotsServiceImpl(baseUrl, _client);
-        Chats = services.Chats ?? new ChatsServiceImpl(baseUrl, _client);
-        Common = services.Common ?? new CommonServiceImpl(baseUrl, _client);
-        GroupTags = services.GroupTags ?? new GroupTagsServiceImpl(baseUrl, _client);
-        LinkPreviews = services.LinkPreviews ?? new LinkPreviewsServiceImpl(baseUrl, _client);
-        Members = services.Members ?? new MembersServiceImpl(baseUrl, _client);
-        Messages = services.Messages ?? new MessagesServiceImpl(baseUrl, _client);
-        Profile = services.Profile ?? new ProfileServiceImpl(baseUrl, _client);
-        Reactions = services.Reactions ?? new ReactionsServiceImpl(baseUrl, _client);
-        ReadMembers = services.ReadMembers ?? new ReadMembersServiceImpl(baseUrl, _client);
-        Search = services.Search ?? new SearchServiceImpl(baseUrl, _client);
-        Security = services.Security ?? new SecurityServiceImpl(baseUrl, _client);
-        Tasks = services.Tasks ?? new TasksServiceImpl(baseUrl, _client);
-        Threads = services.Threads ?? new ThreadsServiceImpl(baseUrl, _client);
-        Users = services.Users ?? new UsersServiceImpl(baseUrl, _client);
-        Views = services.Views ?? new ViewsServiceImpl(baseUrl, _client);
+        Bots = bots ?? new BotsServiceImpl(baseUrl, _client);
+        Chats = chats ?? new ChatsServiceImpl(baseUrl, _client);
+        Common = common ?? new CommonServiceImpl(baseUrl, _client);
+        GroupTags = groupTags ?? new GroupTagsServiceImpl(baseUrl, _client);
+        LinkPreviews = linkPreviews ?? new LinkPreviewsServiceImpl(baseUrl, _client);
+        Members = members ?? new MembersServiceImpl(baseUrl, _client);
+        Messages = messages ?? new MessagesServiceImpl(baseUrl, _client);
+        Profile = profile ?? new ProfileServiceImpl(baseUrl, _client);
+        Reactions = reactions ?? new ReactionsServiceImpl(baseUrl, _client);
+        ReadMembers = readMembers ?? new ReadMembersServiceImpl(baseUrl, _client);
+        Search = search ?? new SearchServiceImpl(baseUrl, _client);
+        Security = security ?? new SecurityServiceImpl(baseUrl, _client);
+        Tasks = tasks ?? new TasksServiceImpl(baseUrl, _client);
+        Threads = threads ?? new ThreadsServiceImpl(baseUrl, _client);
+        Users = users ?? new UsersServiceImpl(baseUrl, _client);
+        Views = views ?? new ViewsServiceImpl(baseUrl, _client);
     }
 
     public void Dispose()

@@ -60,7 +60,7 @@ import {
 } from "./types";
 import { deserialize, serialize, fetchWithRetry } from "./utils";
 
-export abstract class SecurityService {
+export class SecurityService {
   async getAuditEvents(params?: GetAuditEventsParams): Promise<GetAuditEventsResponse> {
     throw new Error("Security.getAuditEvents is not implemented");
   }
@@ -116,7 +116,7 @@ export class SecurityServiceImpl extends SecurityService {
   }
 }
 
-export abstract class BotsService {
+export class BotsService {
   async getWebhookEvents(params?: GetWebhookEventsParams): Promise<GetWebhookEventsResponse> {
     throw new Error("Bots.getWebhookEvents is not implemented");
   }
@@ -205,7 +205,7 @@ export class BotsServiceImpl extends BotsService {
   }
 }
 
-export abstract class ChatsService {
+export class ChatsService {
   async listChats(params?: ListChatsParams): Promise<ListChatsResponse> {
     throw new Error("Chats.listChats is not implemented");
   }
@@ -358,7 +358,7 @@ export class ChatsServiceImpl extends ChatsService {
   }
 }
 
-export abstract class CommonService {
+export class CommonService {
   async downloadExport(id: number): Promise<string> {
     throw new Error("Common.downloadExport is not implemented");
   }
@@ -481,7 +481,7 @@ export class CommonServiceImpl extends CommonService {
   }
 }
 
-export abstract class MembersService {
+export class MembersService {
   async listMembers(id: number, params?: ListMembersParams): Promise<ListMembersResponse> {
     throw new Error("Members.listMembers is not implemented");
   }
@@ -648,7 +648,7 @@ export class MembersServiceImpl extends MembersService {
   }
 }
 
-export abstract class GroupTagsService {
+export class GroupTagsService {
   async listTags(params?: ListTagsParams): Promise<ListTagsResponse> {
     throw new Error("Group tags.listTags is not implemented");
   }
@@ -816,7 +816,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
   }
 }
 
-export abstract class MessagesService {
+export class MessagesService {
   async listChatMessages(params: ListChatMessagesParams): Promise<ListChatMessagesResponse> {
     throw new Error("Messages.listChatMessages is not implemented");
   }
@@ -984,7 +984,7 @@ export class MessagesServiceImpl extends MessagesService {
   }
 }
 
-export abstract class LinkPreviewsService {
+export class LinkPreviewsService {
   async createLinkPreviews(id: number, request: LinkPreviewsRequest): Promise<void> {
     throw new Error("Link Previews.createLinkPreviews is not implemented");
   }
@@ -1015,7 +1015,7 @@ export class LinkPreviewsServiceImpl extends LinkPreviewsService {
   }
 }
 
-export abstract class ReactionsService {
+export class ReactionsService {
   async listReactions(id: number, params?: ListReactionsParams): Promise<ListReactionsResponse> {
     throw new Error("Reactions.listReactions is not implemented");
   }
@@ -1107,7 +1107,7 @@ export class ReactionsServiceImpl extends ReactionsService {
   }
 }
 
-export abstract class ReadMembersService {
+export class ReadMembersService {
   async listReadMembers(id: number, params?: ListReadMembersParams): Promise<unknown> {
     throw new Error("Read members.listReadMembers is not implemented");
   }
@@ -1141,7 +1141,7 @@ export class ReadMembersServiceImpl extends ReadMembersService {
   }
 }
 
-export abstract class ThreadsService {
+export class ThreadsService {
   async getThread(id: number): Promise<Thread> {
     throw new Error("Threads.getThread is not implemented");
   }
@@ -1191,7 +1191,7 @@ export class ThreadsServiceImpl extends ThreadsService {
   }
 }
 
-export abstract class ProfileService {
+export class ProfileService {
   async getTokenInfo(): Promise<AccessTokenInfo> {
     throw new Error("Profile.getTokenInfo is not implemented");
   }
@@ -1299,7 +1299,7 @@ export class ProfileServiceImpl extends ProfileService {
   }
 }
 
-export abstract class SearchService {
+export class SearchService {
   async searchChats(params?: SearchChatsParams): Promise<ListChatsResponse> {
     throw new Error("Search.searchChats is not implemented");
   }
@@ -1444,7 +1444,7 @@ export class SearchServiceImpl extends SearchService {
   }
 }
 
-export abstract class TasksService {
+export class TasksService {
   async listTasks(params?: ListTasksParams): Promise<ListTasksResponse> {
     throw new Error("Tasks.listTasks is not implemented");
   }
@@ -1573,7 +1573,7 @@ export class TasksServiceImpl extends TasksService {
   }
 }
 
-export abstract class UsersService {
+export class UsersService {
   async listUsers(params?: ListUsersParams): Promise<ListMembersResponse> {
     throw new Error("Users.listUsers is not implemented");
   }
@@ -1762,7 +1762,7 @@ export class UsersServiceImpl extends UsersService {
   }
 }
 
-export abstract class ViewsService {
+export class ViewsService {
   async openView(request: OpenViewRequest): Promise<void> {
     throw new Error("Views.openView is not implemented");
   }
@@ -1793,7 +1793,9 @@ export class ViewsServiceImpl extends ViewsService {
   }
 }
 
-export interface PachcaServices {
+export interface PachcaClientOptions {
+  token: string;
+  baseUrl?: string;
   bots?: BotsService;
   chats?: ChatsService;
   common?: CommonService;
@@ -1830,23 +1832,25 @@ export class PachcaClient {
   readonly users: UsersService;
   readonly views: ViewsService;
 
-  constructor(token: string, baseUrl: string = "https://api.pachca.com/api/shared/v1", services: PachcaServices = {}) {
+  constructor(options: PachcaClientOptions) {
+    const { token } = options;
+    const baseUrl = options.baseUrl ?? "https://api.pachca.com/api/shared/v1";
     const headers = { Authorization: `Bearer ${token}` };
-    this.bots = services.bots ?? new BotsServiceImpl(baseUrl, headers);
-    this.chats = services.chats ?? new ChatsServiceImpl(baseUrl, headers);
-    this.common = services.common ?? new CommonServiceImpl(baseUrl, headers);
-    this.groupTags = services.groupTags ?? new GroupTagsServiceImpl(baseUrl, headers);
-    this.linkPreviews = services.linkPreviews ?? new LinkPreviewsServiceImpl(baseUrl, headers);
-    this.members = services.members ?? new MembersServiceImpl(baseUrl, headers);
-    this.messages = services.messages ?? new MessagesServiceImpl(baseUrl, headers);
-    this.profile = services.profile ?? new ProfileServiceImpl(baseUrl, headers);
-    this.reactions = services.reactions ?? new ReactionsServiceImpl(baseUrl, headers);
-    this.readMembers = services.readMembers ?? new ReadMembersServiceImpl(baseUrl, headers);
-    this.search = services.search ?? new SearchServiceImpl(baseUrl, headers);
-    this.security = services.security ?? new SecurityServiceImpl(baseUrl, headers);
-    this.tasks = services.tasks ?? new TasksServiceImpl(baseUrl, headers);
-    this.threads = services.threads ?? new ThreadsServiceImpl(baseUrl, headers);
-    this.users = services.users ?? new UsersServiceImpl(baseUrl, headers);
-    this.views = services.views ?? new ViewsServiceImpl(baseUrl, headers);
+    this.bots = options.bots ?? new BotsServiceImpl(baseUrl, headers);
+    this.chats = options.chats ?? new ChatsServiceImpl(baseUrl, headers);
+    this.common = options.common ?? new CommonServiceImpl(baseUrl, headers);
+    this.groupTags = options.groupTags ?? new GroupTagsServiceImpl(baseUrl, headers);
+    this.linkPreviews = options.linkPreviews ?? new LinkPreviewsServiceImpl(baseUrl, headers);
+    this.members = options.members ?? new MembersServiceImpl(baseUrl, headers);
+    this.messages = options.messages ?? new MessagesServiceImpl(baseUrl, headers);
+    this.profile = options.profile ?? new ProfileServiceImpl(baseUrl, headers);
+    this.reactions = options.reactions ?? new ReactionsServiceImpl(baseUrl, headers);
+    this.readMembers = options.readMembers ?? new ReadMembersServiceImpl(baseUrl, headers);
+    this.search = options.search ?? new SearchServiceImpl(baseUrl, headers);
+    this.security = options.security ?? new SecurityServiceImpl(baseUrl, headers);
+    this.tasks = options.tasks ?? new TasksServiceImpl(baseUrl, headers);
+    this.threads = options.threads ?? new ThreadsServiceImpl(baseUrl, headers);
+    this.users = options.users ?? new UsersServiceImpl(baseUrl, headers);
+    this.views = options.views ?? new ViewsServiceImpl(baseUrl, headers);
   }
 }

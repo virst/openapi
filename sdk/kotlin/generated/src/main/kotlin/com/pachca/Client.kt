@@ -14,7 +14,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-abstract class SecurityService {
+open class SecurityService {
     open suspend fun getAuditEvents(
         startTime: String? = null,
         endTime: String? = null,
@@ -107,7 +107,7 @@ class SecurityServiceImpl internal constructor(
     }
 }
 
-abstract class BotsService {
+open class BotsService {
     open suspend fun getWebhookEvents(limit: Int? = null, cursor: String? = null): GetWebhookEventsResponse {
         throw NotImplementedError("Bots.getWebhookEvents is not implemented")
     }
@@ -174,7 +174,7 @@ class BotsServiceImpl internal constructor(
     }
 }
 
-abstract class ChatsService {
+open class ChatsService {
     open suspend fun listChats(
         sortId: SortOrder? = null,
         availability: ChatAvailability? = null,
@@ -326,7 +326,7 @@ class ChatsServiceImpl internal constructor(
     }
 }
 
-abstract class CommonService {
+open class CommonService {
     open suspend fun downloadExport(id: Int): String {
         throw NotImplementedError("Common.downloadExport is not implemented")
     }
@@ -420,7 +420,7 @@ class CommonServiceImpl internal constructor(
     }
 }
 
-abstract class MembersService {
+open class MembersService {
     open suspend fun listMembers(
         id: Int,
         role: ChatMemberRoleFilter? = null,
@@ -577,7 +577,7 @@ class MembersServiceImpl internal constructor(
     }
 }
 
-abstract class GroupTagsService {
+open class GroupTagsService {
     open suspend fun listTags(
         names: TagNamesFilter? = null,
         limit: Int? = null,
@@ -721,7 +721,7 @@ class GroupTagsServiceImpl internal constructor(
     }
 }
 
-abstract class MessagesService {
+open class MessagesService {
     open suspend fun listChatMessages(
         chatId: Int,
         sortId: SortOrder? = null,
@@ -868,7 +868,7 @@ class MessagesServiceImpl internal constructor(
     }
 }
 
-abstract class LinkPreviewsService {
+open class LinkPreviewsService {
     open suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) {
         throw NotImplementedError("Link Previews.createLinkPreviews is not implemented")
     }
@@ -891,7 +891,7 @@ class LinkPreviewsServiceImpl internal constructor(
     }
 }
 
-abstract class ReactionsService {
+open class ReactionsService {
     open suspend fun listReactions(
         id: Int,
         limit: Int? = null,
@@ -977,7 +977,7 @@ class ReactionsServiceImpl internal constructor(
     }
 }
 
-abstract class ReadMembersService {
+open class ReadMembersService {
     open suspend fun listReadMembers(
         id: Int,
         limit: Int? = null,
@@ -1008,7 +1008,7 @@ class ReadMembersServiceImpl internal constructor(
     }
 }
 
-abstract class ThreadsService {
+open class ThreadsService {
     open suspend fun getThread(id: Int): Thread {
         throw NotImplementedError("Threads.getThread is not implemented")
     }
@@ -1041,7 +1041,7 @@ class ThreadsServiceImpl internal constructor(
     }
 }
 
-abstract class ProfileService {
+open class ProfileService {
     open suspend fun getTokenInfo(): AccessTokenInfo {
         throw NotImplementedError("Profile.getTokenInfo is not implemented")
     }
@@ -1116,7 +1116,7 @@ class ProfileServiceImpl internal constructor(
     }
 }
 
-abstract class SearchService {
+open class SearchService {
     open suspend fun searchChats(
         query: String? = null,
         limit: Int? = null,
@@ -1375,7 +1375,7 @@ class SearchServiceImpl internal constructor(
     }
 }
 
-abstract class TasksService {
+open class TasksService {
     open suspend fun listTasks(limit: Int? = null, cursor: String? = null): ListTasksResponse {
         throw NotImplementedError("Tasks.listTasks is not implemented")
     }
@@ -1471,7 +1471,7 @@ class TasksServiceImpl internal constructor(
     }
 }
 
-abstract class UsersService {
+open class UsersService {
     open suspend fun listUsers(
         query: String? = null,
         limit: Int? = null,
@@ -1618,7 +1618,7 @@ class UsersServiceImpl internal constructor(
     }
 }
 
-abstract class ViewsService {
+open class ViewsService {
     open suspend fun openView(request: OpenViewRequest) {
         throw NotImplementedError("Views.openView is not implemented")
     }
@@ -1641,26 +1641,26 @@ class ViewsServiceImpl internal constructor(
     }
 }
 
-data class PachcaServices(
-    val bots: BotsService? = null,
-    val chats: ChatsService? = null,
-    val common: CommonService? = null,
-    val groupTags: GroupTagsService? = null,
-    val linkPreviews: LinkPreviewsService? = null,
-    val members: MembersService? = null,
-    val messages: MessagesService? = null,
-    val profile: ProfileService? = null,
-    val reactions: ReactionsService? = null,
-    val readMembers: ReadMembersService? = null,
-    val search: SearchService? = null,
-    val security: SecurityService? = null,
-    val tasks: TasksService? = null,
-    val threads: ThreadsService? = null,
-    val users: UsersService? = null,
-    val views: ViewsService? = null
-)
-
-class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/shared/v1", services: PachcaServices = PachcaServices()) : Closeable {
+class PachcaClient(
+    token: String,
+    baseUrl: String = "https://api.pachca.com/api/shared/v1",
+    bots: BotsService? = null,
+    chats: ChatsService? = null,
+    common: CommonService? = null,
+    groupTags: GroupTagsService? = null,
+    linkPreviews: LinkPreviewsService? = null,
+    members: MembersService? = null,
+    messages: MessagesService? = null,
+    profile: ProfileService? = null,
+    reactions: ReactionsService? = null,
+    readMembers: ReadMembersService? = null,
+    search: SearchService? = null,
+    security: SecurityService? = null,
+    tasks: TasksService? = null,
+    threads: ThreadsService? = null,
+    users: UsersService? = null,
+    views: ViewsService? = null
+) : Closeable {
     private val client = HttpClient {
         expectSuccess = false
         followRedirects = false
@@ -1680,22 +1680,22 @@ class PachcaClient(token: String, baseUrl: String = "https://api.pachca.com/api/
         }
     }
 
-    val bots: BotsService = services.bots ?: BotsServiceImpl(baseUrl, client)
-    val chats: ChatsService = services.chats ?: ChatsServiceImpl(baseUrl, client)
-    val common: CommonService = services.common ?: CommonServiceImpl(baseUrl, client)
-    val groupTags: GroupTagsService = services.groupTags ?: GroupTagsServiceImpl(baseUrl, client)
-    val linkPreviews: LinkPreviewsService = services.linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client)
-    val members: MembersService = services.members ?: MembersServiceImpl(baseUrl, client)
-    val messages: MessagesService = services.messages ?: MessagesServiceImpl(baseUrl, client)
-    val profile: ProfileService = services.profile ?: ProfileServiceImpl(baseUrl, client)
-    val reactions: ReactionsService = services.reactions ?: ReactionsServiceImpl(baseUrl, client)
-    val readMembers: ReadMembersService = services.readMembers ?: ReadMembersServiceImpl(baseUrl, client)
-    val search: SearchService = services.search ?: SearchServiceImpl(baseUrl, client)
-    val security: SecurityService = services.security ?: SecurityServiceImpl(baseUrl, client)
-    val tasks: TasksService = services.tasks ?: TasksServiceImpl(baseUrl, client)
-    val threads: ThreadsService = services.threads ?: ThreadsServiceImpl(baseUrl, client)
-    val users: UsersService = services.users ?: UsersServiceImpl(baseUrl, client)
-    val views: ViewsService = services.views ?: ViewsServiceImpl(baseUrl, client)
+    val bots: BotsService = bots ?: BotsServiceImpl(baseUrl, client)
+    val chats: ChatsService = chats ?: ChatsServiceImpl(baseUrl, client)
+    val common: CommonService = common ?: CommonServiceImpl(baseUrl, client)
+    val groupTags: GroupTagsService = groupTags ?: GroupTagsServiceImpl(baseUrl, client)
+    val linkPreviews: LinkPreviewsService = linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client)
+    val members: MembersService = members ?: MembersServiceImpl(baseUrl, client)
+    val messages: MessagesService = messages ?: MessagesServiceImpl(baseUrl, client)
+    val profile: ProfileService = profile ?: ProfileServiceImpl(baseUrl, client)
+    val reactions: ReactionsService = reactions ?: ReactionsServiceImpl(baseUrl, client)
+    val readMembers: ReadMembersService = readMembers ?: ReadMembersServiceImpl(baseUrl, client)
+    val search: SearchService = search ?: SearchServiceImpl(baseUrl, client)
+    val security: SecurityService = security ?: SecurityServiceImpl(baseUrl, client)
+    val tasks: TasksService = tasks ?: TasksServiceImpl(baseUrl, client)
+    val threads: ThreadsService = threads ?: ThreadsServiceImpl(baseUrl, client)
+    val users: UsersService = users ?: UsersServiceImpl(baseUrl, client)
+    val views: ViewsService = views ?: ViewsServiceImpl(baseUrl, client)
 
     override fun close() {
         client.close()

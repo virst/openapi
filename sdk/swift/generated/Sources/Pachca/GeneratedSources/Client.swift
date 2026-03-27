@@ -1920,27 +1920,6 @@ private final class RedirectPreventer: NSObject, URLSessionTaskDelegate {
     }
 }
 
-public struct PachcaServices {
-    public var bots: BotsService? = nil
-    public var chats: ChatsService? = nil
-    public var common: CommonService? = nil
-    public var groupTags: GroupTagsService? = nil
-    public var linkPreviews: LinkPreviewsService? = nil
-    public var members: MembersService? = nil
-    public var messages: MessagesService? = nil
-    public var profile: ProfileService? = nil
-    public var reactions: ReactionsService? = nil
-    public var readMembers: ReadMembersService? = nil
-    public var search: SearchService? = nil
-    public var security: SecurityService? = nil
-    public var tasks: TasksService? = nil
-    public var threads: ThreadsService? = nil
-    public var users: UsersService? = nil
-    public var views: ViewsService? = nil
-
-    public init() {}
-}
-
 public struct PachcaClient {
     public let bots: BotsService
     public let chats: ChatsService
@@ -1959,23 +1938,23 @@ public struct PachcaClient {
     public let users: UsersService
     public let views: ViewsService
 
-    public init(token: String, baseURL: String = "https://api.pachca.com/api/shared/v1", services: PachcaServices = PachcaServices()) {
+    public init(token: String, baseURL: String = "https://api.pachca.com/api/shared/v1", bots: BotsService? = nil, chats: ChatsService? = nil, common: CommonService? = nil, groupTags: GroupTagsService? = nil, linkPreviews: LinkPreviewsService? = nil, members: MembersService? = nil, messages: MessagesService? = nil, profile: ProfileService? = nil, reactions: ReactionsService? = nil, readMembers: ReadMembersService? = nil, search: SearchService? = nil, security: SecurityService? = nil, tasks: TasksService? = nil, threads: ThreadsService? = nil, users: UsersService? = nil, views: ViewsService? = nil) {
         let headers = ["Authorization": "Bearer \(token)"]
-        self.bots = services.bots ?? BotsServiceImpl(baseURL: baseURL, headers: headers)
-        self.chats = services.chats ?? ChatsServiceImpl(baseURL: baseURL, headers: headers)
-        self.common = services.common ?? CommonServiceImpl(baseURL: baseURL, headers: headers)
-        self.groupTags = services.groupTags ?? GroupTagsServiceImpl(baseURL: baseURL, headers: headers)
-        self.linkPreviews = services.linkPreviews ?? LinkPreviewsServiceImpl(baseURL: baseURL, headers: headers)
-        self.members = services.members ?? MembersServiceImpl(baseURL: baseURL, headers: headers)
-        self.messages = services.messages ?? MessagesServiceImpl(baseURL: baseURL, headers: headers)
-        self.profile = services.profile ?? ProfileServiceImpl(baseURL: baseURL, headers: headers)
-        self.reactions = services.reactions ?? ReactionsServiceImpl(baseURL: baseURL, headers: headers)
-        self.readMembers = services.readMembers ?? ReadMembersServiceImpl(baseURL: baseURL, headers: headers)
-        self.search = services.search ?? SearchServiceImpl(baseURL: baseURL, headers: headers)
-        self.security = services.security ?? SecurityServiceImpl(baseURL: baseURL, headers: headers)
-        self.tasks = services.tasks ?? TasksServiceImpl(baseURL: baseURL, headers: headers)
-        self.threads = services.threads ?? ThreadsServiceImpl(baseURL: baseURL, headers: headers)
-        self.users = services.users ?? UsersServiceImpl(baseURL: baseURL, headers: headers)
-        self.views = services.views ?? ViewsServiceImpl(baseURL: baseURL, headers: headers)
+        self.bots = bots ?? BotsServiceImpl(baseURL: baseURL, headers: headers)
+        self.chats = chats ?? ChatsServiceImpl(baseURL: baseURL, headers: headers)
+        self.common = common ?? CommonServiceImpl(baseURL: baseURL, headers: headers)
+        self.groupTags = groupTags ?? GroupTagsServiceImpl(baseURL: baseURL, headers: headers)
+        self.linkPreviews = linkPreviews ?? LinkPreviewsServiceImpl(baseURL: baseURL, headers: headers)
+        self.members = members ?? MembersServiceImpl(baseURL: baseURL, headers: headers)
+        self.messages = messages ?? MessagesServiceImpl(baseURL: baseURL, headers: headers)
+        self.profile = profile ?? ProfileServiceImpl(baseURL: baseURL, headers: headers)
+        self.reactions = reactions ?? ReactionsServiceImpl(baseURL: baseURL, headers: headers)
+        self.readMembers = readMembers ?? ReadMembersServiceImpl(baseURL: baseURL, headers: headers)
+        self.search = search ?? SearchServiceImpl(baseURL: baseURL, headers: headers)
+        self.security = security ?? SecurityServiceImpl(baseURL: baseURL, headers: headers)
+        self.tasks = tasks ?? TasksServiceImpl(baseURL: baseURL, headers: headers)
+        self.threads = threads ?? ThreadsServiceImpl(baseURL: baseURL, headers: headers)
+        self.users = users ?? UsersServiceImpl(baseURL: baseURL, headers: headers)
+        self.views = views ?? ViewsServiceImpl(baseURL: baseURL, headers: headers)
     }
 }
