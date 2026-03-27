@@ -403,6 +403,7 @@ function generateUtils(): string {
   return `#nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -416,12 +417,20 @@ namespace Pachca.Sdk;
 internal static class PachcaUtils
 {
     private const int MaxRetries = 3;
+    private static readonly HashSet<int> Retryable5xx = new() { 500, 502, 503, 504 };
+    private static readonly Random JitterRandom = new();
 
     internal static readonly JsonSerializerOptions JsonOptions = new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
         PropertyNameCaseInsensitive = true,
     };
+
+    private static TimeSpan AddJitter(TimeSpan delay)
+    {
+        var factor = 0.5 + JitterRandom.NextDouble() * 0.5;
+        return TimeSpan.FromMilliseconds(delay.TotalMilliseconds * factor);
+    }
 
     internal static async Task<HttpResponseMessage> SendWithRetryAsync(
         HttpClient client,
@@ -446,15 +455,15 @@ internal static class PachcaUtils
             {
                 var delay = response.Headers.RetryAfter?.Delta
                     ?? TimeSpan.FromSeconds(Math.Pow(2, attempt));
-                await System.Threading.Tasks.Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                await System.Threading.Tasks.Task.Delay(AddJitter(delay), cancellationToken).ConfigureAwait(false);
                 response.Dispose();
                 continue;
             }
 
-            if ((int)response.StatusCode >= 500 && attempt < MaxRetries)
+            if (Retryable5xx.Contains((int)response.StatusCode) && attempt < MaxRetries)
             {
                 var delay = TimeSpan.FromSeconds(attempt + 1);
-                await System.Threading.Tasks.Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                await System.Threading.Tasks.Task.Delay(AddJitter(delay), cancellationToken).ConfigureAwait(false);
                 response.Dispose();
                 continue;
             }
