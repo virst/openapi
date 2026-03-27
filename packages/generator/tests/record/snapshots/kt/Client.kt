@@ -13,16 +13,15 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class LinkPreviewsService {
-    open suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) {
+interface LinkPreviewsService {
+    suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) =
         throw NotImplementedError("Link Previews.createLinkPreviews is not implemented")
-    }
 }
 
 class LinkPreviewsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : LinkPreviewsService() {
+) : LinkPreviewsService {
     override suspend fun createLinkPreviews(id: Int, request: LinkPreviewsRequest) {
         val response = client.post("$baseUrl/messages/$id/link_previews") {
             contentType(ContentType.Application.Json)
@@ -55,7 +54,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            linkPreviews: LinkPreviewsService = LinkPreviewsService()
+            linkPreviews: LinkPreviewsService = object : LinkPreviewsService {}
         ): PachcaClient = PachcaClient(
             client = null,
             linkPreviews = linkPreviews

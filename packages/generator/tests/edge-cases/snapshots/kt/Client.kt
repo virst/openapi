@@ -14,24 +14,22 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class EventsService {
-    open suspend fun listEvents(
+interface EventsService {
+    suspend fun listEvents(
         isActive: Boolean? = null,
         scopes: List<OAuthScope>? = null,
         filter: EventFilter? = null,
-    ): ListEventsResponse {
+    ): ListEventsResponse =
         throw NotImplementedError("Events.listEvents is not implemented")
-    }
 
-    open suspend fun publishEvent(id: Int, scope: OAuthScope): Event {
+    suspend fun publishEvent(id: Int, scope: OAuthScope): Event =
         throw NotImplementedError("Events.publishEvent is not implemented")
-    }
 }
 
 class EventsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : EventsService() {
+) : EventsService {
     override suspend fun listEvents(
         isActive: Boolean?,
         scopes: List<OAuthScope>?,
@@ -60,16 +58,15 @@ class EventsServiceImpl internal constructor(
     }
 }
 
-open class UploadsService {
-    open suspend fun createUpload(request: UploadRequest) {
+interface UploadsService {
+    suspend fun createUpload(request: UploadRequest) =
         throw NotImplementedError("Uploads.createUpload is not implemented")
-    }
 }
 
 class UploadsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : UploadsService() {
+) : UploadsService {
     override suspend fun createUpload(request: UploadRequest) {
         val response = client.submitFormWithBinaryData(
             "$baseUrl/uploads",
@@ -109,8 +106,8 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            events: EventsService = EventsService(),
-            uploads: UploadsService = UploadsService()
+            events: EventsService = object : EventsService {},
+            uploads: UploadsService = object : UploadsService {}
         ): PachcaClient = PachcaClient(
             client = null,
             events = events,

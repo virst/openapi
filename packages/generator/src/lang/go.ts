@@ -716,7 +716,7 @@ function generateClient(ir: IR): string {
   const needURL = ir.services.some((s) => s.operations.some((o) => o.queryParams.length > 0));
   const needErrors = ir.services.some((s) => s.operations.some((o) => o.successResponse.isRedirect));
   const needMultipart = ir.services.some((s) => s.operations.some((o) => o.requestBody?.contentType === 'multipart'));
-  const imports: string[] = ['"context"', '"encoding/json"', '"fmt"', '"net/http"', '"strconv"', '"time"'];
+  const imports: string[] = ['"context"', '"encoding/json"', '"fmt"', '"math/rand"', '"net/http"', '"strconv"', '"time"'];
   if (needBytes) imports.push('"bytes"');
   if (needURL) imports.push('"net/url"');
   if (needErrors) imports.push('"errors"');
@@ -743,6 +743,13 @@ function generateClient(ir: IR): string {
   lines.push('');
   lines.push('const maxRetries = 3');
   lines.push('');
+  lines.push('var retryable5xx = map[int]bool{500: true, 502: true, 503: true, 504: true}');
+  lines.push('');
+  lines.push('func addJitter(delay time.Duration) time.Duration {');
+  lines.push('\tfactor := 0.5 + rand.Float64()*0.5');
+  lines.push('\treturn time.Duration(float64(delay) * factor)');
+  lines.push('}');
+  lines.push('');
   lines.push('func doWithRetry(client *http.Client, req *http.Request) (*http.Response, error) {');
   lines.push('\tfor attempt := 0; ; attempt++ {');
   lines.push('\t\tif attempt > 0 && req.GetBody != nil {');
@@ -760,7 +767,13 @@ function generateClient(ir: IR): string {
   lines.push('\t\t\t\t\tdelay = time.Duration(secs) * time.Second');
   lines.push('\t\t\t\t}');
   lines.push('\t\t\t}');
-  lines.push('\t\t\ttime.Sleep(delay)');
+  lines.push('\t\t\ttime.Sleep(addJitter(delay))');
+  lines.push('\t\t\tcontinue');
+  lines.push('\t\t}');
+  lines.push('\t\tif retryable5xx[resp.StatusCode] && attempt < maxRetries {');
+  lines.push('\t\t\tresp.Body.Close()');
+  lines.push('\t\t\tdelay := time.Duration(attempt+1) * time.Second');
+  lines.push('\t\t\ttime.Sleep(addJitter(delay))');
   lines.push('\t\t\tcontinue');
   lines.push('\t\t}');
   lines.push('\t\treturn resp, nil');

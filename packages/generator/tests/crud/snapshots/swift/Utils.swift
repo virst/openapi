@@ -26,19 +26,32 @@ func deserialize<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
 }
 
 private let maxRetries = 3
+private let retryable5xx: Set<Int> = [500, 502, 503, 504]
+
+private func addJitter(_ delay: UInt64) -> UInt64 {
+    let factor = 0.5 + Double.random(in: 0..<0.5)
+    return UInt64(Double(delay) * factor)
+}
 
 func dataWithRetry(session: URLSession, for request: URLRequest, delegate: (any URLSessionTaskDelegate)? = nil) async throws -> (Data, URLResponse) {
     for attempt in 0...maxRetries {
         let (data, response) = try await session.data(for: request, delegate: delegate)
-        if let http = response as? HTTPURLResponse, http.statusCode == 429, attempt < maxRetries {
-            let delay: UInt64
-            if let ra = http.value(forHTTPHeaderField: "Retry-After"), let secs = UInt64(ra) {
-                delay = secs * 1_000_000_000
-            } else {
-                delay = UInt64(pow(2.0, Double(attempt))) * 1_000_000_000
+        if let http = response as? HTTPURLResponse {
+            if http.statusCode == 429, attempt < maxRetries {
+                let delay: UInt64
+                if let ra = http.value(forHTTPHeaderField: "Retry-After"), let secs = UInt64(ra) {
+                    delay = secs * 1_000_000_000
+                } else {
+                    delay = UInt64(pow(2.0, Double(attempt))) * 1_000_000_000
+                }
+                try await _Concurrency.Task.sleep(nanoseconds: addJitter(delay))
+                continue
             }
-            try await _Concurrency.Task.sleep(nanoseconds: delay)
-            continue
+            if retryable5xx.contains(http.statusCode), attempt < maxRetries {
+                let delay = UInt64(attempt + 1) * 1_000_000_000
+                try await _Concurrency.Task.sleep(nanoseconds: addJitter(delay))
+                continue
+            }
         }
         return (data, response)
     }

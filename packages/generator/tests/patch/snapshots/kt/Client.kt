@@ -13,16 +13,15 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class ItemsService {
-    open suspend fun patchItem(id: Int, request: ItemPatchRequest): Item {
+interface ItemsService {
+    suspend fun patchItem(id: Int, request: ItemPatchRequest): Item =
         throw NotImplementedError("Items.patchItem is not implemented")
-    }
 }
 
 class ItemsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : ItemsService() {
+) : ItemsService {
     override suspend fun patchItem(id: Int, request: ItemPatchRequest): Item {
         val response = client.patch("$baseUrl/items/$id") {
             contentType(ContentType.Application.Json)
@@ -54,7 +53,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            items: ItemsService = ItemsService()
+            items: ItemsService = object : ItemsService {}
         ): PachcaClient = PachcaClient(
             client = null,
             items = items

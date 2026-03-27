@@ -60,6 +60,11 @@ export function serialize(obj: unknown): unknown {
 }
 
 const MAX_RETRIES = 3;
+const RETRYABLE_5XX = new Set([500, 502, 503, 504]);
+
+function addJitter(delay: number): number {
+  return delay * (0.5 + Math.random() * 0.5);
+}
 
 export async function fetchWithRetry(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
@@ -67,7 +72,12 @@ export async function fetchWithRetry(input: RequestInfo | URL, init?: RequestIni
     if (response.status === 429 && attempt < MAX_RETRIES) {
       const retryAfter = response.headers.get("retry-after");
       const delay = retryAfter ? Number(retryAfter) * 1000 : 1000 * Math.pow(2, attempt);
-      await new Promise((r) => setTimeout(r, delay));
+      await new Promise((r) => setTimeout(r, addJitter(delay)));
+      continue;
+    }
+    if (RETRYABLE_5XX.has(response.status) && attempt < MAX_RETRIES) {
+      const delay = 1000 * (attempt + 1);
+      await new Promise((r) => setTimeout(r, addJitter(delay)));
       continue;
     }
     return response;

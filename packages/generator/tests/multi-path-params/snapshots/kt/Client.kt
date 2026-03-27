@@ -13,32 +13,29 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class TasksService {
-    open suspend fun getTask(projectId: Int, taskId: Int): Task {
+interface TasksService {
+    suspend fun getTask(projectId: Int, taskId: Int): Task =
         throw NotImplementedError("Tasks.getTask is not implemented")
-    }
 
-    open suspend fun updateTask(
+    suspend fun updateTask(
         projectId: Int,
         taskId: Int,
         request: TaskUpdateRequest,
-    ): Task {
+    ): Task =
         throw NotImplementedError("Tasks.updateTask is not implemented")
-    }
 
-    open suspend fun deleteComment(
+    suspend fun deleteComment(
         projectId: Int,
         taskId: Int,
         commentId: Int,
-    ) {
+    ) =
         throw NotImplementedError("Tasks.deleteComment is not implemented")
-    }
 }
 
 class TasksServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : TasksService() {
+) : TasksService {
     override suspend fun getTask(projectId: Int, taskId: Int): Task {
         val response = client.get("$baseUrl/projects/$projectId/tasks/$taskId")
         return when (response.status.value) {
@@ -94,7 +91,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            tasks: TasksService = TasksService()
+            tasks: TasksService = object : TasksService {}
         ): PachcaClient = PachcaClient(
             client = null,
             tasks = tasks

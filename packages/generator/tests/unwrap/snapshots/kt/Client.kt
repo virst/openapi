@@ -13,16 +13,15 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class MembersService {
-    open suspend fun addMembers(id: Int, memberIds: List<Int>) {
+interface MembersService {
+    suspend fun addMembers(id: Int, memberIds: List<Int>) =
         throw NotImplementedError("Members.addMembers is not implemented")
-    }
 }
 
 class MembersServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : MembersService() {
+) : MembersService {
     override suspend fun addMembers(id: Int, memberIds: List<Int>) {
         val response = client.post("$baseUrl/chats/$id/members") {
             contentType(ContentType.Application.Json)
@@ -36,20 +35,18 @@ class MembersServiceImpl internal constructor(
     }
 }
 
-open class ChatsService {
-    open suspend fun createChat(request: ChatCreateRequest): Chat {
+interface ChatsService {
+    suspend fun createChat(request: ChatCreateRequest): Chat =
         throw NotImplementedError("Chats.createChat is not implemented")
-    }
 
-    open suspend fun archiveChat(id: Int) {
+    suspend fun archiveChat(id: Int) =
         throw NotImplementedError("Chats.archiveChat is not implemented")
-    }
 }
 
 class ChatsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : ChatsService() {
+) : ChatsService {
     override suspend fun createChat(request: ChatCreateRequest): Chat {
         val response = client.post("$baseUrl/chats") {
             contentType(ContentType.Application.Json)
@@ -94,8 +91,8 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            chats: ChatsService = ChatsService(),
-            members: MembersService = MembersService()
+            chats: ChatsService = object : ChatsService {},
+            members: MembersService = object : MembersService {}
         ): PachcaClient = PachcaClient(
             client = null,
             chats = chats,

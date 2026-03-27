@@ -47,7 +47,7 @@ export class ChatsServiceImpl extends ChatsService {
     super();
   }
 
-  override async listChats(params?: ListChatsParams): Promise<ListChatsResponse> {
+  async listChats(params?: ListChatsParams): Promise<ListChatsResponse> {
     const query = new URLSearchParams();
     if (params?.availability !== undefined) query.set("availability", params.availability);
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -69,7 +69,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async listChatsAll(params?: Omit<ListChatsParams, 'cursor'>): Promise<Chat[]> {
+  async listChatsAll(params?: Omit<ListChatsParams, 'cursor'>): Promise<Chat[]> {
     const items: Chat[] = [];
     let cursor: string | undefined;
     do {
@@ -80,7 +80,7 @@ export class ChatsServiceImpl extends ChatsService {
     return items;
   }
 
-  override async getChat(id: number): Promise<Chat> {
+  async getChat(id: number): Promise<Chat> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}`, {
       headers: this.headers,
     });
@@ -95,7 +95,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async createChat(request: ChatCreateRequest): Promise<Chat> {
+  async createChat(request: ChatCreateRequest): Promise<Chat> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -112,7 +112,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async updateChat(id: number, request: ChatUpdateRequest): Promise<Chat> {
+  async updateChat(id: number, request: ChatUpdateRequest): Promise<Chat> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -129,7 +129,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async archiveChat(id: number): Promise<void> {
+  async archiveChat(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/archive`, {
       method: "PUT",
       headers: this.headers,
@@ -144,7 +144,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async deleteChat(id: number): Promise<void> {
+  async deleteChat(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}`, {
       method: "DELETE",
       headers: this.headers,
@@ -160,25 +160,17 @@ export class ChatsServiceImpl extends ChatsService {
   }
 }
 
-export interface PachcaClientOptions {
-  token: string;
-  baseUrl?: string;
-  chats?: ChatsService;
-}
-
 export class PachcaClient {
   readonly chats: ChatsService;
 
-  constructor(options: PachcaClientOptions) {
-    const { token } = options;
-    const baseUrl = options.baseUrl ?? "https://api.pachca.com/api/shared/v1";
+  constructor(token: string, baseUrl: string = "https://api.pachca.com/api/shared/v1") {
     const headers = { Authorization: `Bearer ${token}` };
-    this.chats = options.chats ?? new ChatsServiceImpl(baseUrl, headers);
+    this.chats = new ChatsServiceImpl(baseUrl, headers);
   }
 
-  static stub(options: Partial<PachcaClientOptions> = {}): PachcaClient {
-    return new PachcaClient({ token: options.token ?? "", baseUrl: options.baseUrl ?? "https://api.pachca.com/api/shared/v1",
-      chats: options.chats ?? new ChatsService(),
-    });
+  static stub(chats: ChatsService = new ChatsService()): PachcaClient {
+    const client = Object.create(PachcaClient.prototype);
+    client.chats = chats;
+    return client;
   }
 }

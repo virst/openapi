@@ -13,16 +13,15 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class CommonService {
-    open suspend fun downloadExport(id: Int): String {
+interface CommonService {
+    suspend fun downloadExport(id: Int): String =
         throw NotImplementedError("Common.downloadExport is not implemented")
-    }
 }
 
 class CommonServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : CommonService() {
+) : CommonService {
     override suspend fun downloadExport(id: Int): String {
         val response = client.get("$baseUrl/exports/$id")
         return when (response.status.value) {
@@ -53,7 +52,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            common: CommonService = CommonService()
+            common: CommonService = object : CommonService {}
         ): PachcaClient = PachcaClient(
             client = null,
             common = common

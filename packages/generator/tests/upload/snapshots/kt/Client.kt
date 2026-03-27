@@ -14,20 +14,18 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class CommonService {
-    open suspend fun uploadFile(directUrl: String, request: FileUploadRequest) {
+interface CommonService {
+    suspend fun uploadFile(directUrl: String, request: FileUploadRequest) =
         throw NotImplementedError("Common.uploadFile is not implemented")
-    }
 
-    open suspend fun getUploadParams(): UploadParams {
+    suspend fun getUploadParams(): UploadParams =
         throw NotImplementedError("Common.getUploadParams is not implemented")
-    }
 }
 
 class CommonServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : CommonService() {
+) : CommonService {
     override suspend fun uploadFile(directUrl: String, request: FileUploadRequest) {
         val response = client.submitFormWithBinaryData(
             directUrl,
@@ -83,7 +81,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            common: CommonService = CommonService()
+            common: CommonService = object : CommonService {}
         ): PachcaClient = PachcaClient(
             client = null,
             common = common

@@ -13,8 +13,8 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class SearchService {
-    open suspend fun searchMessages(
+interface SearchService {
+    suspend fun searchMessages(
         query: String,
         chatIds: List<Int>? = null,
         userIds: List<Int>? = null,
@@ -23,11 +23,10 @@ open class SearchService {
         sort: SearchSort? = null,
         limit: Int? = null,
         cursor: String? = null,
-    ): SearchMessagesResponse {
+    ): SearchMessagesResponse =
         throw NotImplementedError("Search.searchMessages is not implemented")
-    }
 
-    open suspend fun searchMessagesAll(
+    suspend fun searchMessagesAll(
         query: String,
         chatIds: List<Int>? = null,
         userIds: List<Int>? = null,
@@ -35,15 +34,14 @@ open class SearchService {
         createdTo: String? = null,
         sort: SearchSort? = null,
         limit: Int? = null,
-    ): List<MessageSearchResult> {
+    ): List<MessageSearchResult> =
         throw NotImplementedError("Search.searchMessagesAll is not implemented")
-    }
 }
 
 class SearchServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : SearchService() {
+) : SearchService {
     override suspend fun searchMessages(
         query: String,
         chatIds: List<Int>?,
@@ -119,7 +117,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            search: SearchService = SearchService()
+            search: SearchService = object : SearchService {}
         ): PachcaClient = PachcaClient(
             client = null,
             search = search

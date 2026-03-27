@@ -13,51 +13,44 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import java.io.Closeable
 
-open class ChatsService {
-    open suspend fun listChats(
+interface ChatsService {
+    suspend fun listChats(
         availability: ChatAvailability? = null,
         limit: Int? = null,
         cursor: String? = null,
         sortField: String? = null,
         sortOrder: SortOrder? = null,
-    ): ListChatsResponse {
+    ): ListChatsResponse =
         throw NotImplementedError("Chats.listChats is not implemented")
-    }
 
-    open suspend fun listChatsAll(
+    suspend fun listChatsAll(
         availability: ChatAvailability? = null,
         limit: Int? = null,
         sortField: String? = null,
         sortOrder: SortOrder? = null,
-    ): List<Chat> {
+    ): List<Chat> =
         throw NotImplementedError("Chats.listChatsAll is not implemented")
-    }
 
-    open suspend fun getChat(id: Int): Chat {
+    suspend fun getChat(id: Int): Chat =
         throw NotImplementedError("Chats.getChat is not implemented")
-    }
 
-    open suspend fun createChat(request: ChatCreateRequest): Chat {
+    suspend fun createChat(request: ChatCreateRequest): Chat =
         throw NotImplementedError("Chats.createChat is not implemented")
-    }
 
-    open suspend fun updateChat(id: Int, request: ChatUpdateRequest): Chat {
+    suspend fun updateChat(id: Int, request: ChatUpdateRequest): Chat =
         throw NotImplementedError("Chats.updateChat is not implemented")
-    }
 
-    open suspend fun archiveChat(id: Int) {
+    suspend fun archiveChat(id: Int) =
         throw NotImplementedError("Chats.archiveChat is not implemented")
-    }
 
-    open suspend fun deleteChat(id: Int) {
+    suspend fun deleteChat(id: Int) =
         throw NotImplementedError("Chats.deleteChat is not implemented")
-    }
 }
 
 class ChatsServiceImpl internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
-) : ChatsService() {
+) : ChatsService {
     override suspend fun listChats(
         availability: ChatAvailability?,
         limit: Int?,
@@ -172,7 +165,7 @@ class PachcaClient private constructor(
         }
 
         fun stub(
-            chats: ChatsService = ChatsService()
+            chats: ChatsService = object : ChatsService {}
         ): PachcaClient = PachcaClient(
             client = null,
             chats = chats
