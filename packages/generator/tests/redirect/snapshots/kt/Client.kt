@@ -34,33 +34,48 @@ class CommonServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String = "https://api.pachca.com/api/shared/v1",
-    common: CommonService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val common: CommonService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        followRedirects = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String = "https://api.pachca.com/api/shared/v1",
+            common: CommonService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                common = common ?: CommonServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            common: CommonService = CommonService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            common = common
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            followRedirects = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val common: CommonService = common ?: CommonServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

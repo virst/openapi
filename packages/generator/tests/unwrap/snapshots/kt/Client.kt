@@ -72,34 +72,52 @@ class ChatsServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String = "https://api.pachca.com/api/shared/v1",
-    chats: ChatsService? = null,
-    members: MembersService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val chats: ChatsService,
+    val members: MembersService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String = "https://api.pachca.com/api/shared/v1",
+            chats: ChatsService? = null,
+            members: MembersService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                chats = chats ?: ChatsServiceImpl(baseUrl, client),
+                members = members ?: MembersServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            chats: ChatsService = ChatsService(),
+            members: MembersService = MembersService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            chats = chats,
+            members = members
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val chats: ChatsService = chats ?: ChatsServiceImpl(baseUrl, client)
-    val members: MembersService = members ?: MembersServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

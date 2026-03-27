@@ -1641,63 +1641,123 @@ class ViewsServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String = "https://api.pachca.com/api/shared/v1",
-    bots: BotsService? = null,
-    chats: ChatsService? = null,
-    common: CommonService? = null,
-    groupTags: GroupTagsService? = null,
-    linkPreviews: LinkPreviewsService? = null,
-    members: MembersService? = null,
-    messages: MessagesService? = null,
-    profile: ProfileService? = null,
-    reactions: ReactionsService? = null,
-    readMembers: ReadMembersService? = null,
-    search: SearchService? = null,
-    security: SecurityService? = null,
-    tasks: TasksService? = null,
-    threads: ThreadsService? = null,
-    users: UsersService? = null,
-    views: ViewsService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val bots: BotsService,
+    val chats: ChatsService,
+    val common: CommonService,
+    val groupTags: GroupTagsService,
+    val linkPreviews: LinkPreviewsService,
+    val members: MembersService,
+    val messages: MessagesService,
+    val profile: ProfileService,
+    val reactions: ReactionsService,
+    val readMembers: ReadMembersService,
+    val search: SearchService,
+    val security: SecurityService,
+    val tasks: TasksService,
+    val threads: ThreadsService,
+    val users: UsersService,
+    val views: ViewsService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        followRedirects = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String = "https://api.pachca.com/api/shared/v1",
+            bots: BotsService? = null,
+            chats: ChatsService? = null,
+            common: CommonService? = null,
+            groupTags: GroupTagsService? = null,
+            linkPreviews: LinkPreviewsService? = null,
+            members: MembersService? = null,
+            messages: MessagesService? = null,
+            profile: ProfileService? = null,
+            reactions: ReactionsService? = null,
+            readMembers: ReadMembersService? = null,
+            search: SearchService? = null,
+            security: SecurityService? = null,
+            tasks: TasksService? = null,
+            threads: ThreadsService? = null,
+            users: UsersService? = null,
+            views: ViewsService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                bots = bots ?: BotsServiceImpl(baseUrl, client),
+                chats = chats ?: ChatsServiceImpl(baseUrl, client),
+                common = common ?: CommonServiceImpl(baseUrl, client),
+                groupTags = groupTags ?: GroupTagsServiceImpl(baseUrl, client),
+                linkPreviews = linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client),
+                members = members ?: MembersServiceImpl(baseUrl, client),
+                messages = messages ?: MessagesServiceImpl(baseUrl, client),
+                profile = profile ?: ProfileServiceImpl(baseUrl, client),
+                reactions = reactions ?: ReactionsServiceImpl(baseUrl, client),
+                readMembers = readMembers ?: ReadMembersServiceImpl(baseUrl, client),
+                search = search ?: SearchServiceImpl(baseUrl, client),
+                security = security ?: SecurityServiceImpl(baseUrl, client),
+                tasks = tasks ?: TasksServiceImpl(baseUrl, client),
+                threads = threads ?: ThreadsServiceImpl(baseUrl, client),
+                users = users ?: UsersServiceImpl(baseUrl, client),
+                views = views ?: ViewsServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            bots: BotsService = BotsService(),
+            chats: ChatsService = ChatsService(),
+            common: CommonService = CommonService(),
+            groupTags: GroupTagsService = GroupTagsService(),
+            linkPreviews: LinkPreviewsService = LinkPreviewsService(),
+            members: MembersService = MembersService(),
+            messages: MessagesService = MessagesService(),
+            profile: ProfileService = ProfileService(),
+            reactions: ReactionsService = ReactionsService(),
+            readMembers: ReadMembersService = ReadMembersService(),
+            search: SearchService = SearchService(),
+            security: SecurityService = SecurityService(),
+            tasks: TasksService = TasksService(),
+            threads: ThreadsService = ThreadsService(),
+            users: UsersService = UsersService(),
+            views: ViewsService = ViewsService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            bots = bots,
+            chats = chats,
+            common = common,
+            groupTags = groupTags,
+            linkPreviews = linkPreviews,
+            members = members,
+            messages = messages,
+            profile = profile,
+            reactions = reactions,
+            readMembers = readMembers,
+            search = search,
+            security = security,
+            tasks = tasks,
+            threads = threads,
+            users = users,
+            views = views
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            followRedirects = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val bots: BotsService = bots ?: BotsServiceImpl(baseUrl, client)
-    val chats: ChatsService = chats ?: ChatsServiceImpl(baseUrl, client)
-    val common: CommonService = common ?: CommonServiceImpl(baseUrl, client)
-    val groupTags: GroupTagsService = groupTags ?: GroupTagsServiceImpl(baseUrl, client)
-    val linkPreviews: LinkPreviewsService = linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client)
-    val members: MembersService = members ?: MembersServiceImpl(baseUrl, client)
-    val messages: MessagesService = messages ?: MessagesServiceImpl(baseUrl, client)
-    val profile: ProfileService = profile ?: ProfileServiceImpl(baseUrl, client)
-    val reactions: ReactionsService = reactions ?: ReactionsServiceImpl(baseUrl, client)
-    val readMembers: ReadMembersService = readMembers ?: ReadMembersServiceImpl(baseUrl, client)
-    val search: SearchService = search ?: SearchServiceImpl(baseUrl, client)
-    val security: SecurityService = security ?: SecurityServiceImpl(baseUrl, client)
-    val tasks: TasksService = tasks ?: TasksServiceImpl(baseUrl, client)
-    val threads: ThreadsService = threads ?: ThreadsServiceImpl(baseUrl, client)
-    val users: UsersService = users ?: UsersServiceImpl(baseUrl, client)
-    val views: ViewsService = views ?: ViewsServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

@@ -1938,23 +1938,65 @@ public struct PachcaClient {
     public let users: UsersService
     public let views: ViewsService
 
+    private init(bots: BotsService, chats: ChatsService, common: CommonService, groupTags: GroupTagsService, linkPreviews: LinkPreviewsService, members: MembersService, messages: MessagesService, profile: ProfileService, reactions: ReactionsService, readMembers: ReadMembersService, search: SearchService, security: SecurityService, tasks: TasksService, threads: ThreadsService, users: UsersService, views: ViewsService) {
+        self.bots = bots
+        self.chats = chats
+        self.common = common
+        self.groupTags = groupTags
+        self.linkPreviews = linkPreviews
+        self.members = members
+        self.messages = messages
+        self.profile = profile
+        self.reactions = reactions
+        self.readMembers = readMembers
+        self.search = search
+        self.security = security
+        self.tasks = tasks
+        self.threads = threads
+        self.users = users
+        self.views = views
+    }
+
     public init(token: String, baseURL: String = "https://api.pachca.com/api/shared/v1", bots: BotsService? = nil, chats: ChatsService? = nil, common: CommonService? = nil, groupTags: GroupTagsService? = nil, linkPreviews: LinkPreviewsService? = nil, members: MembersService? = nil, messages: MessagesService? = nil, profile: ProfileService? = nil, reactions: ReactionsService? = nil, readMembers: ReadMembersService? = nil, search: SearchService? = nil, security: SecurityService? = nil, tasks: TasksService? = nil, threads: ThreadsService? = nil, users: UsersService? = nil, views: ViewsService? = nil) {
         let headers = ["Authorization": "Bearer \(token)"]
-        self.bots = bots ?? BotsServiceImpl(baseURL: baseURL, headers: headers)
-        self.chats = chats ?? ChatsServiceImpl(baseURL: baseURL, headers: headers)
-        self.common = common ?? CommonServiceImpl(baseURL: baseURL, headers: headers)
-        self.groupTags = groupTags ?? GroupTagsServiceImpl(baseURL: baseURL, headers: headers)
-        self.linkPreviews = linkPreviews ?? LinkPreviewsServiceImpl(baseURL: baseURL, headers: headers)
-        self.members = members ?? MembersServiceImpl(baseURL: baseURL, headers: headers)
-        self.messages = messages ?? MessagesServiceImpl(baseURL: baseURL, headers: headers)
-        self.profile = profile ?? ProfileServiceImpl(baseURL: baseURL, headers: headers)
-        self.reactions = reactions ?? ReactionsServiceImpl(baseURL: baseURL, headers: headers)
-        self.readMembers = readMembers ?? ReadMembersServiceImpl(baseURL: baseURL, headers: headers)
-        self.search = search ?? SearchServiceImpl(baseURL: baseURL, headers: headers)
-        self.security = security ?? SecurityServiceImpl(baseURL: baseURL, headers: headers)
-        self.tasks = tasks ?? TasksServiceImpl(baseURL: baseURL, headers: headers)
-        self.threads = threads ?? ThreadsServiceImpl(baseURL: baseURL, headers: headers)
-        self.users = users ?? UsersServiceImpl(baseURL: baseURL, headers: headers)
-        self.views = views ?? ViewsServiceImpl(baseURL: baseURL, headers: headers)
+        self.init(
+            bots: bots ?? BotsServiceImpl(baseURL: baseURL, headers: headers),
+            chats: chats ?? ChatsServiceImpl(baseURL: baseURL, headers: headers),
+            common: common ?? CommonServiceImpl(baseURL: baseURL, headers: headers),
+            groupTags: groupTags ?? GroupTagsServiceImpl(baseURL: baseURL, headers: headers),
+            linkPreviews: linkPreviews ?? LinkPreviewsServiceImpl(baseURL: baseURL, headers: headers),
+            members: members ?? MembersServiceImpl(baseURL: baseURL, headers: headers),
+            messages: messages ?? MessagesServiceImpl(baseURL: baseURL, headers: headers),
+            profile: profile ?? ProfileServiceImpl(baseURL: baseURL, headers: headers),
+            reactions: reactions ?? ReactionsServiceImpl(baseURL: baseURL, headers: headers),
+            readMembers: readMembers ?? ReadMembersServiceImpl(baseURL: baseURL, headers: headers),
+            search: search ?? SearchServiceImpl(baseURL: baseURL, headers: headers),
+            security: security ?? SecurityServiceImpl(baseURL: baseURL, headers: headers),
+            tasks: tasks ?? TasksServiceImpl(baseURL: baseURL, headers: headers),
+            threads: threads ?? ThreadsServiceImpl(baseURL: baseURL, headers: headers),
+            users: users ?? UsersServiceImpl(baseURL: baseURL, headers: headers),
+            views: views ?? ViewsServiceImpl(baseURL: baseURL, headers: headers)
+        )
+    }
+
+    public static func stub(bots: BotsService = BotsService(), chats: ChatsService = ChatsService(), common: CommonService = CommonService(), groupTags: GroupTagsService = GroupTagsService(), linkPreviews: LinkPreviewsService = LinkPreviewsService(), members: MembersService = MembersService(), messages: MessagesService = MessagesService(), profile: ProfileService = ProfileService(), reactions: ReactionsService = ReactionsService(), readMembers: ReadMembersService = ReadMembersService(), search: SearchService = SearchService(), security: SecurityService = SecurityService(), tasks: TasksService = TasksService(), threads: ThreadsService = ThreadsService(), users: UsersService = UsersService(), views: ViewsService = ViewsService()) -> PachcaClient {
+        PachcaClient(
+            bots: bots,
+            chats: chats,
+            common: common,
+            groupTags: groupTags,
+            linkPreviews: linkPreviews,
+            members: members,
+            messages: messages,
+            profile: profile,
+            reactions: reactions,
+            readMembers: readMembers,
+            search: search,
+            security: security,
+            tasks: tasks,
+            threads: threads,
+            users: users,
+            views: views
+        )
     }
 }

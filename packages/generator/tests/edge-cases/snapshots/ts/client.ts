@@ -109,4 +109,11 @@ export class PachcaClient {
     this.events = options.events ?? new EventsServiceImpl(baseUrl, headers);
     this.uploads = options.uploads ?? new UploadsServiceImpl(baseUrl, headers);
   }
+
+  static stub(options: Partial<PachcaClientOptions> = {}): PachcaClient {
+    return new PachcaClient({ token: options.token ?? "", baseUrl: options.baseUrl ?? "",
+      events: options.events ?? new EventsService(),
+      uploads: options.uploads ?? new UploadsService(),
+    });
+  }
 }

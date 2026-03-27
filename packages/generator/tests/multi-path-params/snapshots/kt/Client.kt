@@ -75,32 +75,47 @@ class TasksServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String = "https://api.example.com/v1",
-    tasks: TasksService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val tasks: TasksService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String = "https://api.example.com/v1",
+            tasks: TasksService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                tasks = tasks ?: TasksServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            tasks: TasksService = TasksService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            tasks = tasks
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val tasks: TasksService = tasks ?: TasksServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

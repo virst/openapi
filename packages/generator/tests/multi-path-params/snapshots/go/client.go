@@ -153,6 +153,12 @@ type clientConfig struct {
 
 type ClientOption func(*clientConfig)
 
+type stubClientConfig struct {
+	tasks TasksService
+}
+
+type StubClientOption func(*stubClientConfig)
+
 const DefaultBaseURL = "https://api.example.com/v1"
 
 func WithBaseURL(baseURL string) ClientOption {
@@ -161,6 +167,10 @@ func WithBaseURL(baseURL string) ClientOption {
 
 func WithTasks(service TasksService) ClientOption {
 	return func(cfg *clientConfig) { cfg.tasks = service }
+}
+
+func WithStubTasks(service TasksService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.tasks = service }
 }
 
 func NewPachcaClient(token string, opts ...ClientOption) *PachcaClient {
@@ -173,5 +183,15 @@ func NewPachcaClient(token string, opts ...ClientOption) *PachcaClient {
 	}
 	return &PachcaClient{
 		Tasks: func() TasksService { if cfg.tasks != nil { return cfg.tasks }; return &TasksServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+	}
+}
+
+func NewStubPachcaClient(opts ...StubClientOption) *PachcaClient {
+	cfg := stubClientConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	return &PachcaClient{
+		Tasks: func() TasksService { if cfg.tasks != nil { return cfg.tasks }; return &TasksServiceStub{} }(),
 	}
 }

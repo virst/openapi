@@ -852,44 +852,79 @@ function emitPachcaClient(
     }))
     .sort((a, b) => a.propName.localeCompare(b.propName));
 
-  const constructorArgs = serviceEntries.map((s) => `    ${s.propName}: ${s.className}? = null`);
-  lines.push(`class PachcaClient(`);
-  lines.push('    token: String,');
-  lines.push(`    baseUrl: String${ktDefault}${constructorArgs.length > 0 ? ',' : ''}`);
-  for (let i = 0; i < constructorArgs.length; i++) {
-    const suffix = i < constructorArgs.length - 1 ? ',' : '';
-    lines.push(`${constructorArgs[i]}${suffix}`);
+  // Private constructor taking nullable client + all services
+  lines.push('class PachcaClient private constructor(');
+  lines.push('    private val client: HttpClient?,');
+  for (let i = 0; i < serviceEntries.length; i++) {
+    const s = serviceEntries[i];
+    const suffix = i < serviceEntries.length - 1 ? ',' : '';
+    lines.push(`    val ${s.propName}: ${s.className}${suffix}`);
   }
   lines.push(') : Closeable {');
-  lines.push('    private val client = HttpClient {');
-  lines.push('        expectSuccess = false');
-  if (hasRedirect) {
-    lines.push('        followRedirects = false');
+  lines.push('');
+  lines.push('    companion object {');
+
+  // operator fun invoke - creates HttpClient and real services
+  const invokeArgs = [`token: String`, `baseUrl: String${ktDefault}`];
+  for (const s of serviceEntries) {
+    invokeArgs.push(`${s.propName}: ${s.className}? = null`);
   }
-  lines.push('        install(ContentNegotiation) {');
-  lines.push('            json(Json { explicitNulls = false })');
+  lines.push('        operator fun invoke(');
+  for (let i = 0; i < invokeArgs.length; i++) {
+    const suffix = i < invokeArgs.length - 1 ? ',' : '';
+    lines.push(`            ${invokeArgs[i]}${suffix}`);
+  }
+  lines.push('        ): PachcaClient {');
+  lines.push('            val client = createClient(token)');
+  lines.push('            return PachcaClient(');
+  lines.push('                client = client,');
+  for (let i = 0; i < serviceEntries.length; i++) {
+    const s = serviceEntries[i];
+    const suffix = i < serviceEntries.length - 1 ? ',' : '';
+    lines.push(`                ${s.propName} = ${s.propName} ?: ${serviceToImplName(s.className)}(baseUrl, client)${suffix}`);
+  }
+  lines.push('            )');
   lines.push('        }');
-  lines.push('        install(HttpRequestRetry) {');
-  lines.push('            retryOnServerErrors(maxRetries = 3)');
-  lines.push('            retryIf { _, response -> response.status.value == 429 }');
-  lines.push('            delayMillis { retry ->');
-  lines.push('                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()');
-  lines.push('                if (retryAfter != null) retryAfter * 1000L else retry * 1000L');
+  lines.push('');
+
+  // fun stub - creates client without HttpClient
+  lines.push('        fun stub(');
+  for (let i = 0; i < serviceEntries.length; i++) {
+    const s = serviceEntries[i];
+    const suffix = i < serviceEntries.length - 1 ? ',' : '';
+    lines.push(`            ${s.propName}: ${s.className} = ${s.className}()${suffix}`);
+  }
+  lines.push('        ): PachcaClient = PachcaClient(');
+  lines.push('            client = null,');
+  for (let i = 0; i < serviceEntries.length; i++) {
+    const s = serviceEntries[i];
+    const suffix = i < serviceEntries.length - 1 ? ',' : '';
+    lines.push(`            ${s.propName} = ${s.propName}${suffix}`);
+  }
+  lines.push('        )');
+  lines.push('');
+
+  // private fun createClient
+  lines.push('        private fun createClient(token: String): HttpClient = HttpClient {');
+  lines.push('            expectSuccess = false');
+  if (hasRedirect) {
+    lines.push('            followRedirects = false');
+  }
+  lines.push('            install(ContentNegotiation) { json(Json { explicitNulls = false }) }');
+  lines.push('            install(HttpRequestRetry) {');
+  lines.push('                retryOnServerErrors(maxRetries = 3)');
+  lines.push('                retryIf { _, response -> response.status.value == 429 }');
+  lines.push('                delayMillis { retry ->');
+  lines.push('                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()');
+  lines.push('                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L');
+  lines.push('                }');
   lines.push('            }');
-  lines.push('        }');
-  lines.push('        defaultRequest {');
-  lines.push('            bearerAuth(token)');
+  lines.push('            defaultRequest { bearerAuth(token) }');
   lines.push('        }');
   lines.push('    }');
   lines.push('');
-
-  for (const s of serviceEntries) {
-    lines.push(`    val ${s.propName}: ${s.className} = ${s.propName} ?: ${serviceToImplName(s.className)}(baseUrl, client)`);
-  }
-
-  lines.push('');
   lines.push('    override fun close() {');
-  lines.push('        client.close()');
+  lines.push('        client?.close()');
   lines.push('    }');
   lines.push('}');
 }

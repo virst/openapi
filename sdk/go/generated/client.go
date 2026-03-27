@@ -3058,6 +3058,27 @@ type clientConfig struct {
 
 type ClientOption func(*clientConfig)
 
+type stubClientConfig struct {
+	bots BotsService
+	chats ChatsService
+	common CommonService
+	groupTags GroupTagsService
+	linkPreviews LinkPreviewsService
+	members MembersService
+	messages MessagesService
+	profile ProfileService
+	reactions ReactionsService
+	readMembers ReadMembersService
+	search SearchService
+	security SecurityService
+	tasks TasksService
+	threads ThreadsService
+	users UsersService
+	views ViewsService
+}
+
+type StubClientOption func(*stubClientConfig)
+
 const DefaultBaseURL = "https://api.pachca.com/api/shared/v1"
 
 func WithBaseURL(baseURL string) ClientOption {
@@ -3128,6 +3149,70 @@ func WithViews(service ViewsService) ClientOption {
 	return func(cfg *clientConfig) { cfg.views = service }
 }
 
+func WithStubBots(service BotsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.bots = service }
+}
+
+func WithStubChats(service ChatsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.chats = service }
+}
+
+func WithStubCommon(service CommonService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.common = service }
+}
+
+func WithStubGroupTags(service GroupTagsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.groupTags = service }
+}
+
+func WithStubLinkPreviews(service LinkPreviewsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.linkPreviews = service }
+}
+
+func WithStubMembers(service MembersService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.members = service }
+}
+
+func WithStubMessages(service MessagesService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.messages = service }
+}
+
+func WithStubProfile(service ProfileService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.profile = service }
+}
+
+func WithStubReactions(service ReactionsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.reactions = service }
+}
+
+func WithStubReadMembers(service ReadMembersService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.readMembers = service }
+}
+
+func WithStubSearch(service SearchService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.search = service }
+}
+
+func WithStubSecurity(service SecurityService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.security = service }
+}
+
+func WithStubTasks(service TasksService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.tasks = service }
+}
+
+func WithStubThreads(service ThreadsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.threads = service }
+}
+
+func WithStubUsers(service UsersService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.users = service }
+}
+
+func WithStubViews(service ViewsService) StubClientOption {
+	return func(cfg *stubClientConfig) { cfg.views = service }
+}
+
 func NewPachcaClient(token string, opts ...ClientOption) *PachcaClient {
 	cfg := clientConfig{baseURL: DefaultBaseURL}
 	for _, opt := range opts {
@@ -3156,5 +3241,30 @@ func NewPachcaClient(token string, opts ...ClientOption) *PachcaClient {
 		Threads     : func() ThreadsService { if cfg.threads != nil { return cfg.threads }; return &ThreadsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
 		Users       : func() UsersService { if cfg.users != nil { return cfg.users }; return &UsersServiceImpl{baseURL: cfg.baseURL, client: client} }(),
 		Views       : func() ViewsService { if cfg.views != nil { return cfg.views }; return &ViewsServiceImpl{baseURL: cfg.baseURL, client: client} }(),
+	}
+}
+
+func NewStubPachcaClient(opts ...StubClientOption) *PachcaClient {
+	cfg := stubClientConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	return &PachcaClient{
+		Bots        : func() BotsService { if cfg.bots != nil { return cfg.bots }; return &BotsServiceStub{} }(),
+		Chats       : func() ChatsService { if cfg.chats != nil { return cfg.chats }; return &ChatsServiceStub{} }(),
+		Common      : func() CommonService { if cfg.common != nil { return cfg.common }; return &CommonServiceStub{} }(),
+		GroupTags   : func() GroupTagsService { if cfg.groupTags != nil { return cfg.groupTags }; return &GroupTagsServiceStub{} }(),
+		LinkPreviews: func() LinkPreviewsService { if cfg.linkPreviews != nil { return cfg.linkPreviews }; return &LinkPreviewsServiceStub{} }(),
+		Members     : func() MembersService { if cfg.members != nil { return cfg.members }; return &MembersServiceStub{} }(),
+		Messages    : func() MessagesService { if cfg.messages != nil { return cfg.messages }; return &MessagesServiceStub{} }(),
+		Profile     : func() ProfileService { if cfg.profile != nil { return cfg.profile }; return &ProfileServiceStub{} }(),
+		Reactions   : func() ReactionsService { if cfg.reactions != nil { return cfg.reactions }; return &ReactionsServiceStub{} }(),
+		ReadMembers : func() ReadMembersService { if cfg.readMembers != nil { return cfg.readMembers }; return &ReadMembersServiceStub{} }(),
+		Search      : func() SearchService { if cfg.search != nil { return cfg.search }; return &SearchServiceStub{} }(),
+		Security    : func() SecurityService { if cfg.security != nil { return cfg.security }; return &SecurityServiceStub{} }(),
+		Tasks       : func() TasksService { if cfg.tasks != nil { return cfg.tasks }; return &TasksServiceStub{} }(),
+		Threads     : func() ThreadsService { if cfg.threads != nil { return cfg.threads }; return &ThreadsServiceStub{} }(),
+		Users       : func() UsersService { if cfg.users != nil { return cfg.users }; return &UsersServiceStub{} }(),
+		Views       : func() ViewsService { if cfg.views != nil { return cfg.views }; return &ViewsServiceStub{} }(),
 	}
 }

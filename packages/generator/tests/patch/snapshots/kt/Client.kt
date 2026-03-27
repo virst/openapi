@@ -35,32 +35,47 @@ class ItemsServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String = "https://api.example.com/v1",
-    items: ItemsService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val items: ItemsService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String = "https://api.example.com/v1",
+            items: ItemsService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                items = items ?: ItemsServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            items: ItemsService = ItemsService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            items = items
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val items: ItemsService = items ?: ItemsServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

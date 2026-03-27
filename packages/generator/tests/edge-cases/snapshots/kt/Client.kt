@@ -87,34 +87,52 @@ class UploadsServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String,
-    events: EventsService? = null,
-    uploads: UploadsService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val events: EventsService,
+    val uploads: UploadsService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String,
+            events: EventsService? = null,
+            uploads: UploadsService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                events = events ?: EventsServiceImpl(baseUrl, client),
+                uploads = uploads ?: UploadsServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            events: EventsService = EventsService(),
+            uploads: UploadsService = UploadsService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            events = events,
+            uploads = uploads
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val events: EventsService = events ?: EventsServiceImpl(baseUrl, client)
-    val uploads: UploadsService = uploads ?: UploadsServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

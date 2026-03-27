@@ -36,32 +36,47 @@ class LinkPreviewsServiceImpl internal constructor(
     }
 }
 
-class PachcaClient(
-    token: String,
-    baseUrl: String = "https://api.pachca.com/api/shared/v1",
-    linkPreviews: LinkPreviewsService? = null
+class PachcaClient private constructor(
+    private val client: HttpClient?,
+    val linkPreviews: LinkPreviewsService
 ) : Closeable {
-    private val client = HttpClient {
-        expectSuccess = false
-        install(ContentNegotiation) {
-            json(Json { explicitNulls = false })
+
+    companion object {
+        operator fun invoke(
+            token: String,
+            baseUrl: String = "https://api.pachca.com/api/shared/v1",
+            linkPreviews: LinkPreviewsService? = null
+        ): PachcaClient {
+            val client = createClient(token)
+            return PachcaClient(
+                client = client,
+                linkPreviews = linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client)
+            )
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryIf { _, response -> response.status.value == 429 }
-            delayMillis { retry ->
-                val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
-                if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+
+        fun stub(
+            linkPreviews: LinkPreviewsService = LinkPreviewsService()
+        ): PachcaClient = PachcaClient(
+            client = null,
+            linkPreviews = linkPreviews
+        )
+
+        private fun createClient(token: String): HttpClient = HttpClient {
+            expectSuccess = false
+            install(ContentNegotiation) { json(Json { explicitNulls = false }) }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                retryIf { _, response -> response.status.value == 429 }
+                delayMillis { retry ->
+                    val retryAfter = response?.headers?.get("Retry-After")?.toLongOrNull()
+                    if (retryAfter != null) retryAfter * 1000L else retry * 1000L
+                }
             }
-        }
-        defaultRequest {
-            bearerAuth(token)
+            defaultRequest { bearerAuth(token) }
         }
     }
 
-    val linkPreviews: LinkPreviewsService = linkPreviews ?: LinkPreviewsServiceImpl(baseUrl, client)
-
     override fun close() {
-        client.close()
+        client?.close()
     }
 }

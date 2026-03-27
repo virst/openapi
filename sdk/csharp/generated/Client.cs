@@ -2492,7 +2492,7 @@ public sealed class ViewsServiceImpl : ViewsService
 
 public sealed class PachcaClient : IDisposable
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient? _client;
 
     public BotsService Bots { get; }
     public ChatsService Chats { get; }
@@ -2510,6 +2510,26 @@ public sealed class PachcaClient : IDisposable
     public ThreadsService Threads { get; }
     public UsersService Users { get; }
     public ViewsService Views { get; }
+
+    private PachcaClient(BotsService bots, ChatsService chats, CommonService common, GroupTagsService groupTags, LinkPreviewsService linkPreviews, MembersService members, MessagesService messages, ProfileService profile, ReactionsService reactions, ReadMembersService readMembers, SearchService search, SecurityService security, TasksService tasks, ThreadsService threads, UsersService users, ViewsService views)
+    {
+        Bots = bots;
+        Chats = chats;
+        Common = common;
+        GroupTags = groupTags;
+        LinkPreviews = linkPreviews;
+        Members = members;
+        Messages = messages;
+        Profile = profile;
+        Reactions = reactions;
+        ReadMembers = readMembers;
+        Search = search;
+        Security = security;
+        Tasks = tasks;
+        Threads = threads;
+        Users = users;
+        Views = views;
+    }
 
     public PachcaClient(string token, string baseUrl = "https://api.pachca.com/api/shared/v1", BotsService? bots = null, ChatsService? chats = null, CommonService? common = null, GroupTagsService? groupTags = null, LinkPreviewsService? linkPreviews = null, MembersService? members = null, MessagesService? messages = null, ProfileService? profile = null, ReactionsService? reactions = null, ReadMembersService? readMembers = null, SearchService? search = null, SecurityService? security = null, TasksService? tasks = null, ThreadsService? threads = null, UsersService? users = null, ViewsService? views = null)
     {
@@ -2539,9 +2559,14 @@ public sealed class PachcaClient : IDisposable
         Views = views ?? new ViewsServiceImpl(baseUrl, _client);
     }
 
+    public static PachcaClient Stub(BotsService? bots = null, ChatsService? chats = null, CommonService? common = null, GroupTagsService? groupTags = null, LinkPreviewsService? linkPreviews = null, MembersService? members = null, MessagesService? messages = null, ProfileService? profile = null, ReactionsService? reactions = null, ReadMembersService? readMembers = null, SearchService? search = null, SecurityService? security = null, TasksService? tasks = null, ThreadsService? threads = null, UsersService? users = null, ViewsService? views = null)
+    {
+        return new PachcaClient(bots ?? new BotsService(), chats ?? new ChatsService(), common ?? new CommonService(), groupTags ?? new GroupTagsService(), linkPreviews ?? new LinkPreviewsService(), members ?? new MembersService(), messages ?? new MessagesService(), profile ?? new ProfileService(), reactions ?? new ReactionsService(), readMembers ?? new ReadMembersService(), search ?? new SearchService(), security ?? new SecurityService(), tasks ?? new TasksService(), threads ?? new ThreadsService(), users ?? new UsersService(), views ?? new ViewsService());
+    }
+
     public void Dispose()
     {
-        _client.Dispose();
+        _client?.Dispose();
         GC.SuppressFinalize(this);
     }
 }
