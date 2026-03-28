@@ -78,7 +78,7 @@ export class SecurityServiceImpl extends SecurityService {
     super();
   }
 
-  override async getAuditEvents(params?: GetAuditEventsParams): Promise<GetAuditEventsResponse> {
+  async getAuditEvents(params?: GetAuditEventsParams): Promise<GetAuditEventsResponse> {
     const query = new URLSearchParams();
     if (params?.startTime !== undefined) query.set("start_time", params.startTime);
     if (params?.endTime !== undefined) query.set("end_time", params.endTime);
@@ -104,7 +104,7 @@ export class SecurityServiceImpl extends SecurityService {
     }
   }
 
-  override async getAuditEventsAll(params?: Omit<GetAuditEventsParams, 'cursor'>): Promise<AuditEvent[]> {
+  async getAuditEventsAll(params?: Omit<GetAuditEventsParams, 'cursor'>): Promise<AuditEvent[]> {
     const items: AuditEvent[] = [];
     let cursor: string | undefined;
     do {
@@ -142,7 +142,7 @@ export class BotsServiceImpl extends BotsService {
     super();
   }
 
-  override async getWebhookEvents(params?: GetWebhookEventsParams): Promise<GetWebhookEventsResponse> {
+  async getWebhookEvents(params?: GetWebhookEventsParams): Promise<GetWebhookEventsResponse> {
     const query = new URLSearchParams();
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
     if (params?.cursor !== undefined) query.set("cursor", params.cursor);
@@ -161,7 +161,7 @@ export class BotsServiceImpl extends BotsService {
     }
   }
 
-  override async getWebhookEventsAll(params?: Omit<GetWebhookEventsParams, 'cursor'>): Promise<WebhookEvent[]> {
+  async getWebhookEventsAll(params?: Omit<GetWebhookEventsParams, 'cursor'>): Promise<WebhookEvent[]> {
     const items: WebhookEvent[] = [];
     let cursor: string | undefined;
     do {
@@ -172,7 +172,7 @@ export class BotsServiceImpl extends BotsService {
     return items;
   }
 
-  override async updateBot(id: number, request: BotUpdateRequest): Promise<BotResponse> {
+  async updateBot(id: number, request: BotUpdateRequest): Promise<BotResponse> {
     const response = await fetchWithRetry(`${this.baseUrl}/bots/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -189,7 +189,7 @@ export class BotsServiceImpl extends BotsService {
     }
   }
 
-  override async deleteWebhookEvent(id: string): Promise<void> {
+  async deleteWebhookEvent(id: string): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/webhooks/events/${id}`, {
       method: "DELETE",
       headers: this.headers,
@@ -243,7 +243,7 @@ export class ChatsServiceImpl extends ChatsService {
     super();
   }
 
-  override async listChats(params?: ListChatsParams): Promise<ListChatsResponse> {
+  async listChats(params?: ListChatsParams): Promise<ListChatsResponse> {
     const query = new URLSearchParams();
     if (params?.sortId !== undefined) query.set("sort[{field}]", params.sortId);
     if (params?.availability !== undefined) query.set("availability", params.availability);
@@ -267,7 +267,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async listChatsAll(params?: Omit<ListChatsParams, 'cursor'>): Promise<Chat[]> {
+  async listChatsAll(params?: Omit<ListChatsParams, 'cursor'>): Promise<Chat[]> {
     const items: Chat[] = [];
     let cursor: string | undefined;
     do {
@@ -278,7 +278,7 @@ export class ChatsServiceImpl extends ChatsService {
     return items;
   }
 
-  override async getChat(id: number): Promise<Chat> {
+  async getChat(id: number): Promise<Chat> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}`, {
       headers: this.headers,
     });
@@ -293,7 +293,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async createChat(request: ChatCreateRequest): Promise<Chat> {
+  async createChat(request: ChatCreateRequest): Promise<Chat> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -310,7 +310,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async updateChat(id: number, request: ChatUpdateRequest): Promise<Chat> {
+  async updateChat(id: number, request: ChatUpdateRequest): Promise<Chat> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -327,7 +327,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async archiveChat(id: number): Promise<void> {
+  async archiveChat(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/archive`, {
       method: "PUT",
       headers: this.headers,
@@ -342,7 +342,7 @@ export class ChatsServiceImpl extends ChatsService {
     }
   }
 
-  override async unarchiveChat(id: number): Promise<void> {
+  async unarchiveChat(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/unarchive`, {
       method: "PUT",
       headers: this.headers,
@@ -388,7 +388,7 @@ export class CommonServiceImpl extends CommonService {
     super();
   }
 
-  override async downloadExport(id: number): Promise<string> {
+  async downloadExport(id: number): Promise<string> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/exports/${id}`, {
       headers: this.headers,
       redirect: "manual",
@@ -408,7 +408,7 @@ export class CommonServiceImpl extends CommonService {
     }
   }
 
-  override async listProperties(params: ListPropertiesParams): Promise<ListPropertiesResponse> {
+  async listProperties(params: ListPropertiesParams): Promise<ListPropertiesResponse> {
     const query = new URLSearchParams();
     query.set("entity_type", params.entityType);
     const response = await fetchWithRetry(`${this.baseUrl}/custom_properties?${query}`, {
@@ -425,7 +425,7 @@ export class CommonServiceImpl extends CommonService {
     }
   }
 
-  override async requestExport(request: ExportRequest): Promise<void> {
+  async requestExport(request: ExportRequest): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/exports`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -441,7 +441,7 @@ export class CommonServiceImpl extends CommonService {
     }
   }
 
-  override async uploadFile(directUrl: string, request: FileUploadRequest): Promise<void> {
+  async uploadFile(directUrl: string, request: FileUploadRequest): Promise<void> {
     const form = new FormData();
     form.set("Content-Disposition", request.contentDisposition);
     form.set("acl", request.acl);
@@ -464,7 +464,7 @@ export class CommonServiceImpl extends CommonService {
     }
   }
 
-  override async getUploadParams(): Promise<UploadParams> {
+  async getUploadParams(): Promise<UploadParams> {
     const response = await fetchWithRetry(`${this.baseUrl}/uploads`, {
       method: "POST",
       headers: this.headers,
@@ -523,7 +523,7 @@ export class MembersServiceImpl extends MembersService {
     super();
   }
 
-  override async listMembers(id: number, params?: ListMembersParams): Promise<ListMembersResponse> {
+  async listMembers(id: number, params?: ListMembersParams): Promise<ListMembersResponse> {
     const query = new URLSearchParams();
     if (params?.role !== undefined) query.set("role", params.role);
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -543,7 +543,7 @@ export class MembersServiceImpl extends MembersService {
     }
   }
 
-  override async listMembersAll(id: number, params?: Omit<ListMembersParams, 'cursor'>): Promise<User[]> {
+  async listMembersAll(id: number, params?: Omit<ListMembersParams, 'cursor'>): Promise<User[]> {
     const items: User[] = [];
     let cursor: string | undefined;
     do {
@@ -554,7 +554,7 @@ export class MembersServiceImpl extends MembersService {
     return items;
   }
 
-  override async addTags(id: number, groupTagIds: number[]): Promise<void> {
+  async addTags(id: number, groupTagIds: number[]): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/group_tags`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -570,7 +570,7 @@ export class MembersServiceImpl extends MembersService {
     }
   }
 
-  override async addMembers(id: number, request: AddMembersRequest): Promise<void> {
+  async addMembers(id: number, request: AddMembersRequest): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/members`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -586,7 +586,7 @@ export class MembersServiceImpl extends MembersService {
     }
   }
 
-  override async updateMemberRole(id: number, userId: number, role: ChatMemberRole): Promise<void> {
+  async updateMemberRole(id: number, userId: number, role: ChatMemberRole): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/members/${userId}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -602,7 +602,7 @@ export class MembersServiceImpl extends MembersService {
     }
   }
 
-  override async removeTag(id: number, tagId: number): Promise<void> {
+  async removeTag(id: number, tagId: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/group_tags/${tagId}`, {
       method: "DELETE",
       headers: this.headers,
@@ -617,7 +617,7 @@ export class MembersServiceImpl extends MembersService {
     }
   }
 
-  override async leaveChat(id: number): Promise<void> {
+  async leaveChat(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/leave`, {
       method: "DELETE",
       headers: this.headers,
@@ -632,7 +632,7 @@ export class MembersServiceImpl extends MembersService {
     }
   }
 
-  override async removeMember(id: number, userId: number): Promise<void> {
+  async removeMember(id: number, userId: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/chats/${id}/members/${userId}`, {
       method: "DELETE",
       headers: this.headers,
@@ -690,7 +690,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     super();
   }
 
-  override async listTags(params?: ListTagsParams): Promise<ListTagsResponse> {
+  async listTags(params?: ListTagsParams): Promise<ListTagsResponse> {
     const query = new URLSearchParams();
     if (params?.names !== undefined) query.set("names", String(params.names));
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -710,7 +710,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     }
   }
 
-  override async listTagsAll(params?: Omit<ListTagsParams, 'cursor'>): Promise<GroupTag[]> {
+  async listTagsAll(params?: Omit<ListTagsParams, 'cursor'>): Promise<GroupTag[]> {
     const items: GroupTag[] = [];
     let cursor: string | undefined;
     do {
@@ -721,7 +721,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     return items;
   }
 
-  override async getTag(id: number): Promise<GroupTag> {
+  async getTag(id: number): Promise<GroupTag> {
     const response = await fetchWithRetry(`${this.baseUrl}/group_tags/${id}`, {
       headers: this.headers,
     });
@@ -736,7 +736,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     }
   }
 
-  override async getTagUsers(id: number, params?: GetTagUsersParams): Promise<ListMembersResponse> {
+  async getTagUsers(id: number, params?: GetTagUsersParams): Promise<ListMembersResponse> {
     const query = new URLSearchParams();
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
     if (params?.cursor !== undefined) query.set("cursor", params.cursor);
@@ -755,7 +755,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     }
   }
 
-  override async getTagUsersAll(id: number, params?: Omit<GetTagUsersParams, 'cursor'>): Promise<User[]> {
+  async getTagUsersAll(id: number, params?: Omit<GetTagUsersParams, 'cursor'>): Promise<User[]> {
     const items: User[] = [];
     let cursor: string | undefined;
     do {
@@ -766,7 +766,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     return items;
   }
 
-  override async createTag(request: GroupTagRequest): Promise<GroupTag> {
+  async createTag(request: GroupTagRequest): Promise<GroupTag> {
     const response = await fetchWithRetry(`${this.baseUrl}/group_tags`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -783,7 +783,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     }
   }
 
-  override async updateTag(id: number, request: GroupTagRequest): Promise<GroupTag> {
+  async updateTag(id: number, request: GroupTagRequest): Promise<GroupTag> {
     const response = await fetchWithRetry(`${this.baseUrl}/group_tags/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -800,7 +800,7 @@ export class GroupTagsServiceImpl extends GroupTagsService {
     }
   }
 
-  override async deleteTag(id: number): Promise<void> {
+  async deleteTag(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/group_tags/${id}`, {
       method: "DELETE",
       headers: this.headers,
@@ -858,7 +858,7 @@ export class MessagesServiceImpl extends MessagesService {
     super();
   }
 
-  override async listChatMessages(params: ListChatMessagesParams): Promise<ListChatMessagesResponse> {
+  async listChatMessages(params: ListChatMessagesParams): Promise<ListChatMessagesResponse> {
     const query = new URLSearchParams();
     query.set("chat_id", String(params.chatId));
     if (params?.sortId !== undefined) query.set("sort[{field}]", params.sortId);
@@ -878,7 +878,7 @@ export class MessagesServiceImpl extends MessagesService {
     }
   }
 
-  override async listChatMessagesAll(params: Omit<ListChatMessagesParams, 'cursor'>): Promise<Message[]> {
+  async listChatMessagesAll(params: Omit<ListChatMessagesParams, 'cursor'>): Promise<Message[]> {
     const items: Message[] = [];
     let cursor: string | undefined;
     do {
@@ -889,7 +889,7 @@ export class MessagesServiceImpl extends MessagesService {
     return items;
   }
 
-  override async getMessage(id: number): Promise<Message> {
+  async getMessage(id: number): Promise<Message> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}`, {
       headers: this.headers,
     });
@@ -904,7 +904,7 @@ export class MessagesServiceImpl extends MessagesService {
     }
   }
 
-  override async createMessage(request: MessageCreateRequest): Promise<Message> {
+  async createMessage(request: MessageCreateRequest): Promise<Message> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -921,7 +921,7 @@ export class MessagesServiceImpl extends MessagesService {
     }
   }
 
-  override async pinMessage(id: number): Promise<void> {
+  async pinMessage(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}/pin`, {
       method: "POST",
       headers: this.headers,
@@ -936,7 +936,7 @@ export class MessagesServiceImpl extends MessagesService {
     }
   }
 
-  override async updateMessage(id: number, request: MessageUpdateRequest): Promise<Message> {
+  async updateMessage(id: number, request: MessageUpdateRequest): Promise<Message> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -953,7 +953,7 @@ export class MessagesServiceImpl extends MessagesService {
     }
   }
 
-  override async deleteMessage(id: number): Promise<void> {
+  async deleteMessage(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}`, {
       method: "DELETE",
       headers: this.headers,
@@ -968,7 +968,7 @@ export class MessagesServiceImpl extends MessagesService {
     }
   }
 
-  override async unpinMessage(id: number): Promise<void> {
+  async unpinMessage(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}/pin`, {
       method: "DELETE",
       headers: this.headers,
@@ -998,7 +998,7 @@ export class LinkPreviewsServiceImpl extends LinkPreviewsService {
     super();
   }
 
-  override async createLinkPreviews(id: number, request: LinkPreviewsRequest): Promise<void> {
+  async createLinkPreviews(id: number, request: LinkPreviewsRequest): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}/link_previews`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1041,7 +1041,7 @@ export class ReactionsServiceImpl extends ReactionsService {
     super();
   }
 
-  override async listReactions(id: number, params?: ListReactionsParams): Promise<ListReactionsResponse> {
+  async listReactions(id: number, params?: ListReactionsParams): Promise<ListReactionsResponse> {
     const query = new URLSearchParams();
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
     if (params?.cursor !== undefined) query.set("cursor", params.cursor);
@@ -1060,7 +1060,7 @@ export class ReactionsServiceImpl extends ReactionsService {
     }
   }
 
-  override async listReactionsAll(id: number, params?: Omit<ListReactionsParams, 'cursor'>): Promise<Reaction[]> {
+  async listReactionsAll(id: number, params?: Omit<ListReactionsParams, 'cursor'>): Promise<Reaction[]> {
     const items: Reaction[] = [];
     let cursor: string | undefined;
     do {
@@ -1071,7 +1071,7 @@ export class ReactionsServiceImpl extends ReactionsService {
     return items;
   }
 
-  override async addReaction(id: number, request: ReactionRequest): Promise<Reaction> {
+  async addReaction(id: number, request: ReactionRequest): Promise<Reaction> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}/reactions`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1088,7 +1088,7 @@ export class ReactionsServiceImpl extends ReactionsService {
     }
   }
 
-  override async removeReaction(id: number, params: RemoveReactionParams): Promise<void> {
+  async removeReaction(id: number, params: RemoveReactionParams): Promise<void> {
     const query = new URLSearchParams();
     query.set("code", params.code);
     if (params?.name !== undefined) query.set("name", params.name);
@@ -1121,7 +1121,7 @@ export class ReadMembersServiceImpl extends ReadMembersService {
     super();
   }
 
-  override async listReadMembers(id: number, params?: ListReadMembersParams): Promise<unknown> {
+  async listReadMembers(id: number, params?: ListReadMembersParams): Promise<unknown> {
     const query = new URLSearchParams();
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
     if (params?.cursor !== undefined) query.set("cursor", params.cursor);
@@ -1159,7 +1159,7 @@ export class ThreadsServiceImpl extends ThreadsService {
     super();
   }
 
-  override async getThread(id: number): Promise<Thread> {
+  async getThread(id: number): Promise<Thread> {
     const response = await fetchWithRetry(`${this.baseUrl}/threads/${id}`, {
       headers: this.headers,
     });
@@ -1174,7 +1174,7 @@ export class ThreadsServiceImpl extends ThreadsService {
     }
   }
 
-  override async createThread(id: number): Promise<Thread> {
+  async createThread(id: number): Promise<Thread> {
     const response = await fetchWithRetry(`${this.baseUrl}/messages/${id}/thread`, {
       method: "POST",
       headers: this.headers,
@@ -1221,7 +1221,7 @@ export class ProfileServiceImpl extends ProfileService {
     super();
   }
 
-  override async getTokenInfo(): Promise<AccessTokenInfo> {
+  async getTokenInfo(): Promise<AccessTokenInfo> {
     const response = await fetchWithRetry(`${this.baseUrl}/oauth/token/info`, {
       headers: this.headers,
     });
@@ -1236,7 +1236,7 @@ export class ProfileServiceImpl extends ProfileService {
     }
   }
 
-  override async getProfile(): Promise<User> {
+  async getProfile(): Promise<User> {
     const response = await fetchWithRetry(`${this.baseUrl}/profile`, {
       headers: this.headers,
     });
@@ -1251,7 +1251,7 @@ export class ProfileServiceImpl extends ProfileService {
     }
   }
 
-  override async getStatus(): Promise<unknown> {
+  async getStatus(): Promise<unknown> {
     const response = await fetchWithRetry(`${this.baseUrl}/profile/status`, {
       headers: this.headers,
     });
@@ -1266,7 +1266,7 @@ export class ProfileServiceImpl extends ProfileService {
     }
   }
 
-  override async updateStatus(request: StatusUpdateRequest): Promise<UserStatus> {
+  async updateStatus(request: StatusUpdateRequest): Promise<UserStatus> {
     const response = await fetchWithRetry(`${this.baseUrl}/profile/status`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1283,7 +1283,7 @@ export class ProfileServiceImpl extends ProfileService {
     }
   }
 
-  override async deleteStatus(): Promise<void> {
+  async deleteStatus(): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/profile/status`, {
       method: "DELETE",
       headers: this.headers,
@@ -1333,7 +1333,7 @@ export class SearchServiceImpl extends SearchService {
     super();
   }
 
-  override async searchChats(params?: SearchChatsParams): Promise<ListChatsResponse> {
+  async searchChats(params?: SearchChatsParams): Promise<ListChatsResponse> {
     const query = new URLSearchParams();
     if (params?.query !== undefined) query.set("query", params.query);
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -1359,7 +1359,7 @@ export class SearchServiceImpl extends SearchService {
     }
   }
 
-  override async searchChatsAll(params?: Omit<SearchChatsParams, 'cursor'>): Promise<Chat[]> {
+  async searchChatsAll(params?: Omit<SearchChatsParams, 'cursor'>): Promise<Chat[]> {
     const items: Chat[] = [];
     let cursor: string | undefined;
     do {
@@ -1370,7 +1370,7 @@ export class SearchServiceImpl extends SearchService {
     return items;
   }
 
-  override async searchMessages(params?: SearchMessagesParams): Promise<ListChatMessagesResponse> {
+  async searchMessages(params?: SearchMessagesParams): Promise<ListChatMessagesResponse> {
     const query = new URLSearchParams();
     if (params?.query !== undefined) query.set("query", params.query);
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -1396,7 +1396,7 @@ export class SearchServiceImpl extends SearchService {
     }
   }
 
-  override async searchMessagesAll(params?: Omit<SearchMessagesParams, 'cursor'>): Promise<Message[]> {
+  async searchMessagesAll(params?: Omit<SearchMessagesParams, 'cursor'>): Promise<Message[]> {
     const items: Message[] = [];
     let cursor: string | undefined;
     do {
@@ -1407,7 +1407,7 @@ export class SearchServiceImpl extends SearchService {
     return items;
   }
 
-  override async searchUsers(params?: SearchUsersParams): Promise<ListMembersResponse> {
+  async searchUsers(params?: SearchUsersParams): Promise<ListMembersResponse> {
     const query = new URLSearchParams();
     if (params?.query !== undefined) query.set("query", params.query);
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -1432,7 +1432,7 @@ export class SearchServiceImpl extends SearchService {
     }
   }
 
-  override async searchUsersAll(params?: Omit<SearchUsersParams, 'cursor'>): Promise<User[]> {
+  async searchUsersAll(params?: Omit<SearchUsersParams, 'cursor'>): Promise<User[]> {
     const items: User[] = [];
     let cursor: string | undefined;
     do {
@@ -1478,7 +1478,7 @@ export class TasksServiceImpl extends TasksService {
     super();
   }
 
-  override async listTasks(params?: ListTasksParams): Promise<ListTasksResponse> {
+  async listTasks(params?: ListTasksParams): Promise<ListTasksResponse> {
     const query = new URLSearchParams();
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
     if (params?.cursor !== undefined) query.set("cursor", params.cursor);
@@ -1497,7 +1497,7 @@ export class TasksServiceImpl extends TasksService {
     }
   }
 
-  override async listTasksAll(params?: Omit<ListTasksParams, 'cursor'>): Promise<Task[]> {
+  async listTasksAll(params?: Omit<ListTasksParams, 'cursor'>): Promise<Task[]> {
     const items: Task[] = [];
     let cursor: string | undefined;
     do {
@@ -1508,7 +1508,7 @@ export class TasksServiceImpl extends TasksService {
     return items;
   }
 
-  override async getTask(id: number): Promise<Task> {
+  async getTask(id: number): Promise<Task> {
     const response = await fetchWithRetry(`${this.baseUrl}/tasks/${id}`, {
       headers: this.headers,
     });
@@ -1523,7 +1523,7 @@ export class TasksServiceImpl extends TasksService {
     }
   }
 
-  override async createTask(request: TaskCreateRequest): Promise<Task> {
+  async createTask(request: TaskCreateRequest): Promise<Task> {
     const response = await fetchWithRetry(`${this.baseUrl}/tasks`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1540,7 +1540,7 @@ export class TasksServiceImpl extends TasksService {
     }
   }
 
-  override async updateTask(id: number, request: TaskUpdateRequest): Promise<Task> {
+  async updateTask(id: number, request: TaskUpdateRequest): Promise<Task> {
     const response = await fetchWithRetry(`${this.baseUrl}/tasks/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1557,7 +1557,7 @@ export class TasksServiceImpl extends TasksService {
     }
   }
 
-  override async deleteTask(id: number): Promise<void> {
+  async deleteTask(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/tasks/${id}`, {
       method: "DELETE",
       headers: this.headers,
@@ -1619,7 +1619,7 @@ export class UsersServiceImpl extends UsersService {
     super();
   }
 
-  override async listUsers(params?: ListUsersParams): Promise<ListMembersResponse> {
+  async listUsers(params?: ListUsersParams): Promise<ListMembersResponse> {
     const query = new URLSearchParams();
     if (params?.query !== undefined) query.set("query", params.query);
     if (params?.limit !== undefined) query.set("limit", String(params.limit));
@@ -1639,7 +1639,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async listUsersAll(params?: Omit<ListUsersParams, 'cursor'>): Promise<User[]> {
+  async listUsersAll(params?: Omit<ListUsersParams, 'cursor'>): Promise<User[]> {
     const items: User[] = [];
     let cursor: string | undefined;
     do {
@@ -1650,7 +1650,7 @@ export class UsersServiceImpl extends UsersService {
     return items;
   }
 
-  override async getUser(id: number): Promise<User> {
+  async getUser(id: number): Promise<User> {
     const response = await fetchWithRetry(`${this.baseUrl}/users/${id}`, {
       headers: this.headers,
     });
@@ -1665,7 +1665,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async getUserStatus(userId: number): Promise<unknown> {
+  async getUserStatus(userId: number): Promise<unknown> {
     const response = await fetchWithRetry(`${this.baseUrl}/users/${userId}/status`, {
       headers: this.headers,
     });
@@ -1680,7 +1680,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async createUser(request: UserCreateRequest): Promise<User> {
+  async createUser(request: UserCreateRequest): Promise<User> {
     const response = await fetchWithRetry(`${this.baseUrl}/users`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1697,7 +1697,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async updateUser(id: number, request: UserUpdateRequest): Promise<User> {
+  async updateUser(id: number, request: UserUpdateRequest): Promise<User> {
     const response = await fetchWithRetry(`${this.baseUrl}/users/${id}`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1714,7 +1714,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async updateUserStatus(userId: number, request: StatusUpdateRequest): Promise<UserStatus> {
+  async updateUserStatus(userId: number, request: StatusUpdateRequest): Promise<UserStatus> {
     const response = await fetchWithRetry(`${this.baseUrl}/users/${userId}/status`, {
       method: "PUT",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1731,7 +1731,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async deleteUser(id: number): Promise<void> {
+  async deleteUser(id: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/users/${id}`, {
       method: "DELETE",
       headers: this.headers,
@@ -1746,7 +1746,7 @@ export class UsersServiceImpl extends UsersService {
     }
   }
 
-  override async deleteUserStatus(userId: number): Promise<void> {
+  async deleteUserStatus(userId: number): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/users/${userId}/status`, {
       method: "DELETE",
       headers: this.headers,
@@ -1776,7 +1776,7 @@ export class ViewsServiceImpl extends ViewsService {
     super();
   }
 
-  override async openView(request: OpenViewRequest): Promise<void> {
+  async openView(request: OpenViewRequest): Promise<void> {
     const response = await fetchWithRetry(`${this.baseUrl}/views/open`, {
       method: "POST",
       headers: { ...this.headers, "Content-Type": "application/json" },
@@ -1791,27 +1791,6 @@ export class ViewsServiceImpl extends ViewsService {
         throw new ApiError(((await response.json()) as any).errors);
     }
   }
-}
-
-export interface PachcaClientOptions {
-  token: string;
-  baseUrl?: string;
-  bots?: BotsService;
-  chats?: ChatsService;
-  common?: CommonService;
-  groupTags?: GroupTagsService;
-  linkPreviews?: LinkPreviewsService;
-  members?: MembersService;
-  messages?: MessagesService;
-  profile?: ProfileService;
-  reactions?: ReactionsService;
-  readMembers?: ReadMembersService;
-  search?: SearchService;
-  security?: SecurityService;
-  tasks?: TasksService;
-  threads?: ThreadsService;
-  users?: UsersService;
-  views?: ViewsService;
 }
 
 export class PachcaClient {
@@ -1832,46 +1811,44 @@ export class PachcaClient {
   readonly users: UsersService;
   readonly views: ViewsService;
 
-  constructor(options: PachcaClientOptions) {
-    const { token } = options;
-    const baseUrl = options.baseUrl ?? "https://api.pachca.com/api/shared/v1";
+  constructor(token: string, baseUrl: string = "https://api.pachca.com/api/shared/v1") {
     const headers = { Authorization: `Bearer ${token}` };
-    this.bots = options.bots ?? new BotsServiceImpl(baseUrl, headers);
-    this.chats = options.chats ?? new ChatsServiceImpl(baseUrl, headers);
-    this.common = options.common ?? new CommonServiceImpl(baseUrl, headers);
-    this.groupTags = options.groupTags ?? new GroupTagsServiceImpl(baseUrl, headers);
-    this.linkPreviews = options.linkPreviews ?? new LinkPreviewsServiceImpl(baseUrl, headers);
-    this.members = options.members ?? new MembersServiceImpl(baseUrl, headers);
-    this.messages = options.messages ?? new MessagesServiceImpl(baseUrl, headers);
-    this.profile = options.profile ?? new ProfileServiceImpl(baseUrl, headers);
-    this.reactions = options.reactions ?? new ReactionsServiceImpl(baseUrl, headers);
-    this.readMembers = options.readMembers ?? new ReadMembersServiceImpl(baseUrl, headers);
-    this.search = options.search ?? new SearchServiceImpl(baseUrl, headers);
-    this.security = options.security ?? new SecurityServiceImpl(baseUrl, headers);
-    this.tasks = options.tasks ?? new TasksServiceImpl(baseUrl, headers);
-    this.threads = options.threads ?? new ThreadsServiceImpl(baseUrl, headers);
-    this.users = options.users ?? new UsersServiceImpl(baseUrl, headers);
-    this.views = options.views ?? new ViewsServiceImpl(baseUrl, headers);
+    this.bots = new BotsServiceImpl(baseUrl, headers);
+    this.chats = new ChatsServiceImpl(baseUrl, headers);
+    this.common = new CommonServiceImpl(baseUrl, headers);
+    this.groupTags = new GroupTagsServiceImpl(baseUrl, headers);
+    this.linkPreviews = new LinkPreviewsServiceImpl(baseUrl, headers);
+    this.members = new MembersServiceImpl(baseUrl, headers);
+    this.messages = new MessagesServiceImpl(baseUrl, headers);
+    this.profile = new ProfileServiceImpl(baseUrl, headers);
+    this.reactions = new ReactionsServiceImpl(baseUrl, headers);
+    this.readMembers = new ReadMembersServiceImpl(baseUrl, headers);
+    this.search = new SearchServiceImpl(baseUrl, headers);
+    this.security = new SecurityServiceImpl(baseUrl, headers);
+    this.tasks = new TasksServiceImpl(baseUrl, headers);
+    this.threads = new ThreadsServiceImpl(baseUrl, headers);
+    this.users = new UsersServiceImpl(baseUrl, headers);
+    this.views = new ViewsServiceImpl(baseUrl, headers);
   }
 
-  static stub(options: Partial<PachcaClientOptions> = {}): PachcaClient {
-    return new PachcaClient({ token: options.token ?? "", baseUrl: options.baseUrl ?? "https://api.pachca.com/api/shared/v1",
-      bots: options.bots ?? new BotsService(),
-      chats: options.chats ?? new ChatsService(),
-      common: options.common ?? new CommonService(),
-      groupTags: options.groupTags ?? new GroupTagsService(),
-      linkPreviews: options.linkPreviews ?? new LinkPreviewsService(),
-      members: options.members ?? new MembersService(),
-      messages: options.messages ?? new MessagesService(),
-      profile: options.profile ?? new ProfileService(),
-      reactions: options.reactions ?? new ReactionsService(),
-      readMembers: options.readMembers ?? new ReadMembersService(),
-      search: options.search ?? new SearchService(),
-      security: options.security ?? new SecurityService(),
-      tasks: options.tasks ?? new TasksService(),
-      threads: options.threads ?? new ThreadsService(),
-      users: options.users ?? new UsersService(),
-      views: options.views ?? new ViewsService(),
-    });
+  static stub(bots: BotsService = new BotsService(), chats: ChatsService = new ChatsService(), common: CommonService = new CommonService(), groupTags: GroupTagsService = new GroupTagsService(), linkPreviews: LinkPreviewsService = new LinkPreviewsService(), members: MembersService = new MembersService(), messages: MessagesService = new MessagesService(), profile: ProfileService = new ProfileService(), reactions: ReactionsService = new ReactionsService(), readMembers: ReadMembersService = new ReadMembersService(), search: SearchService = new SearchService(), security: SecurityService = new SecurityService(), tasks: TasksService = new TasksService(), threads: ThreadsService = new ThreadsService(), users: UsersService = new UsersService(), views: ViewsService = new ViewsService()): PachcaClient {
+    const client = Object.create(PachcaClient.prototype);
+    client.bots = bots;
+    client.chats = chats;
+    client.common = common;
+    client.groupTags = groupTags;
+    client.linkPreviews = linkPreviews;
+    client.members = members;
+    client.messages = messages;
+    client.profile = profile;
+    client.reactions = reactions;
+    client.readMembers = readMembers;
+    client.search = search;
+    client.security = security;
+    client.tasks = tasks;
+    client.threads = threads;
+    client.users = users;
+    client.views = views;
+    return client;
   }
 }

@@ -10,7 +10,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -24,32 +23,6 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.base.RoundTrip(req)
 }
 
-const maxRetries = 3
-
-func doWithRetry(client *http.Client, req *http.Request) (*http.Response, error) {
-	for attempt := 0; ; attempt++ {
-		if attempt > 0 && req.GetBody != nil {
-			req.Body, _ = req.GetBody()
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		if resp.StatusCode == http.StatusTooManyRequests && attempt < maxRetries {
-			resp.Body.Close()
-			delay := time.Duration(1<<uint(attempt)) * time.Second
-			if ra := resp.Header.Get("Retry-After"); ra != "" {
-				if secs, err := strconv.Atoi(ra); err == nil {
-					delay = time.Duration(secs) * time.Second
-				}
-			}
-			time.Sleep(delay)
-			continue
-		}
-		return resp, nil
-	}
-}
-
 type SecurityService interface {
 	GetAuditEvents(ctx context.Context, params *GetAuditEventsParams) (*GetAuditEventsResponse, error)
 	GetAuditEventsAll(ctx context.Context, params *GetAuditEventsParams) ([]AuditEvent, error)
@@ -58,11 +31,11 @@ type SecurityService interface {
 type SecurityServiceStub struct{}
 
 func (s *SecurityServiceStub) GetAuditEvents(ctx context.Context, params *GetAuditEventsParams) (*GetAuditEventsResponse, error) {
-	return nil, fmt.Errorf("Security.getAuditEvents is not implemented")
+	return nil, NotImplementedError{Method: "Security.getAuditEvents"}
 }
 
 func (s *SecurityServiceStub) GetAuditEventsAll(ctx context.Context, params *GetAuditEventsParams) ([]AuditEvent, error) {
-	return nil, fmt.Errorf("Security.getAuditEventsAll is not implemented")
+	return nil, NotImplementedError{Method: "Security.getAuditEventsAll"}
 }
 
 type SecurityServiceImpl struct {
@@ -161,19 +134,19 @@ type BotsService interface {
 type BotsServiceStub struct{}
 
 func (s *BotsServiceStub) GetWebhookEvents(ctx context.Context, params *GetWebhookEventsParams) (*GetWebhookEventsResponse, error) {
-	return nil, fmt.Errorf("Bots.getWebhookEvents is not implemented")
+	return nil, NotImplementedError{Method: "Bots.getWebhookEvents"}
 }
 
 func (s *BotsServiceStub) GetWebhookEventsAll(ctx context.Context, params *GetWebhookEventsParams) ([]WebhookEvent, error) {
-	return nil, fmt.Errorf("Bots.getWebhookEventsAll is not implemented")
+	return nil, NotImplementedError{Method: "Bots.getWebhookEventsAll"}
 }
 
 func (s *BotsServiceStub) UpdateBot(ctx context.Context, id int32, request BotUpdateRequest) (*BotResponse, error) {
-	return nil, fmt.Errorf("Bots.updateBot is not implemented")
+	return nil, NotImplementedError{Method: "Bots.updateBot"}
 }
 
 func (s *BotsServiceStub) DeleteWebhookEvent(ctx context.Context, id string) error {
-	return fmt.Errorf("Bots.deleteWebhookEvent is not implemented")
+	return NotImplementedError{Method: "Bots.deleteWebhookEvent"}
 }
 
 type BotsServiceImpl struct {
@@ -313,31 +286,31 @@ type ChatsService interface {
 type ChatsServiceStub struct{}
 
 func (s *ChatsServiceStub) ListChats(ctx context.Context, params *ListChatsParams) (*ListChatsResponse, error) {
-	return nil, fmt.Errorf("Chats.listChats is not implemented")
+	return nil, NotImplementedError{Method: "Chats.listChats"}
 }
 
 func (s *ChatsServiceStub) ListChatsAll(ctx context.Context, params *ListChatsParams) ([]Chat, error) {
-	return nil, fmt.Errorf("Chats.listChatsAll is not implemented")
+	return nil, NotImplementedError{Method: "Chats.listChatsAll"}
 }
 
 func (s *ChatsServiceStub) GetChat(ctx context.Context, id int32) (*Chat, error) {
-	return nil, fmt.Errorf("Chats.getChat is not implemented")
+	return nil, NotImplementedError{Method: "Chats.getChat"}
 }
 
 func (s *ChatsServiceStub) CreateChat(ctx context.Context, request ChatCreateRequest) (*Chat, error) {
-	return nil, fmt.Errorf("Chats.createChat is not implemented")
+	return nil, NotImplementedError{Method: "Chats.createChat"}
 }
 
 func (s *ChatsServiceStub) UpdateChat(ctx context.Context, id int32, request ChatUpdateRequest) (*Chat, error) {
-	return nil, fmt.Errorf("Chats.updateChat is not implemented")
+	return nil, NotImplementedError{Method: "Chats.updateChat"}
 }
 
 func (s *ChatsServiceStub) ArchiveChat(ctx context.Context, id int32) error {
-	return fmt.Errorf("Chats.archiveChat is not implemented")
+	return NotImplementedError{Method: "Chats.archiveChat"}
 }
 
 func (s *ChatsServiceStub) UnarchiveChat(ctx context.Context, id int32) error {
-	return fmt.Errorf("Chats.unarchiveChat is not implemented")
+	return NotImplementedError{Method: "Chats.unarchiveChat"}
 }
 
 type ChatsServiceImpl struct {
@@ -579,23 +552,23 @@ type CommonService interface {
 type CommonServiceStub struct{}
 
 func (s *CommonServiceStub) DownloadExport(ctx context.Context, id int32) (string, error) {
-	return "", fmt.Errorf("Common.downloadExport is not implemented")
+	return "", NotImplementedError{Method: "Common.downloadExport"}
 }
 
 func (s *CommonServiceStub) ListProperties(ctx context.Context, params ListPropertiesParams) (*ListPropertiesResponse, error) {
-	return nil, fmt.Errorf("Common.listProperties is not implemented")
+	return nil, NotImplementedError{Method: "Common.listProperties"}
 }
 
 func (s *CommonServiceStub) RequestExport(ctx context.Context, request ExportRequest) error {
-	return fmt.Errorf("Common.requestExport is not implemented")
+	return NotImplementedError{Method: "Common.requestExport"}
 }
 
 func (s *CommonServiceStub) UploadFile(ctx context.Context, directUrl string, request FileUploadRequest) error {
-	return fmt.Errorf("Common.uploadFile is not implemented")
+	return NotImplementedError{Method: "Common.uploadFile"}
 }
 
 func (s *CommonServiceStub) GetUploadParams(ctx context.Context) (*UploadParams, error) {
-	return nil, fmt.Errorf("Common.getUploadParams is not implemented")
+	return nil, NotImplementedError{Method: "Common.getUploadParams"}
 }
 
 type CommonServiceImpl struct {
@@ -781,35 +754,35 @@ type MembersService interface {
 type MembersServiceStub struct{}
 
 func (s *MembersServiceStub) ListMembers(ctx context.Context, id int32, params *ListMembersParams) (*ListMembersResponse, error) {
-	return nil, fmt.Errorf("Members.listMembers is not implemented")
+	return nil, NotImplementedError{Method: "Members.listMembers"}
 }
 
 func (s *MembersServiceStub) ListMembersAll(ctx context.Context, id int32, params *ListMembersParams) ([]User, error) {
-	return nil, fmt.Errorf("Members.listMembersAll is not implemented")
+	return nil, NotImplementedError{Method: "Members.listMembersAll"}
 }
 
 func (s *MembersServiceStub) AddTags(ctx context.Context, id int32, groupTagIds []int32) error {
-	return fmt.Errorf("Members.addTags is not implemented")
+	return NotImplementedError{Method: "Members.addTags"}
 }
 
 func (s *MembersServiceStub) AddMembers(ctx context.Context, id int32, request AddMembersRequest) error {
-	return fmt.Errorf("Members.addMembers is not implemented")
+	return NotImplementedError{Method: "Members.addMembers"}
 }
 
 func (s *MembersServiceStub) UpdateMemberRole(ctx context.Context, id int32, userId int32, role ChatMemberRole) error {
-	return fmt.Errorf("Members.updateMemberRole is not implemented")
+	return NotImplementedError{Method: "Members.updateMemberRole"}
 }
 
 func (s *MembersServiceStub) RemoveTag(ctx context.Context, id int32, tagId int32) error {
-	return fmt.Errorf("Members.removeTag is not implemented")
+	return NotImplementedError{Method: "Members.removeTag"}
 }
 
 func (s *MembersServiceStub) LeaveChat(ctx context.Context, id int32) error {
-	return fmt.Errorf("Members.leaveChat is not implemented")
+	return NotImplementedError{Method: "Members.leaveChat"}
 }
 
 func (s *MembersServiceStub) RemoveMember(ctx context.Context, id int32, userId int32) error {
-	return fmt.Errorf("Members.removeMember is not implemented")
+	return NotImplementedError{Method: "Members.removeMember"}
 }
 
 type MembersServiceImpl struct {
@@ -1053,35 +1026,35 @@ type GroupTagsService interface {
 type GroupTagsServiceStub struct{}
 
 func (s *GroupTagsServiceStub) ListTags(ctx context.Context, params *ListTagsParams) (*ListTagsResponse, error) {
-	return nil, fmt.Errorf("Group tags.listTags is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.listTags"}
 }
 
 func (s *GroupTagsServiceStub) ListTagsAll(ctx context.Context, params *ListTagsParams) ([]GroupTag, error) {
-	return nil, fmt.Errorf("Group tags.listTagsAll is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.listTagsAll"}
 }
 
 func (s *GroupTagsServiceStub) GetTag(ctx context.Context, id int32) (*GroupTag, error) {
-	return nil, fmt.Errorf("Group tags.getTag is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.getTag"}
 }
 
 func (s *GroupTagsServiceStub) GetTagUsers(ctx context.Context, id int32, params *GetTagUsersParams) (*ListMembersResponse, error) {
-	return nil, fmt.Errorf("Group tags.getTagUsers is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.getTagUsers"}
 }
 
 func (s *GroupTagsServiceStub) GetTagUsersAll(ctx context.Context, id int32, params *GetTagUsersParams) ([]User, error) {
-	return nil, fmt.Errorf("Group tags.getTagUsersAll is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.getTagUsersAll"}
 }
 
 func (s *GroupTagsServiceStub) CreateTag(ctx context.Context, request GroupTagRequest) (*GroupTag, error) {
-	return nil, fmt.Errorf("Group tags.createTag is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.createTag"}
 }
 
 func (s *GroupTagsServiceStub) UpdateTag(ctx context.Context, id int32, request GroupTagRequest) (*GroupTag, error) {
-	return nil, fmt.Errorf("Group tags.updateTag is not implemented")
+	return nil, NotImplementedError{Method: "Group tags.updateTag"}
 }
 
 func (s *GroupTagsServiceStub) DeleteTag(ctx context.Context, id int32) error {
-	return fmt.Errorf("Group tags.deleteTag is not implemented")
+	return NotImplementedError{Method: "Group tags.deleteTag"}
 }
 
 type GroupTagsServiceImpl struct {
@@ -1350,35 +1323,35 @@ type MessagesService interface {
 type MessagesServiceStub struct{}
 
 func (s *MessagesServiceStub) ListChatMessages(ctx context.Context, params ListChatMessagesParams) (*ListChatMessagesResponse, error) {
-	return nil, fmt.Errorf("Messages.listChatMessages is not implemented")
+	return nil, NotImplementedError{Method: "Messages.listChatMessages"}
 }
 
 func (s *MessagesServiceStub) ListChatMessagesAll(ctx context.Context, params *ListChatMessagesParams) ([]Message, error) {
-	return nil, fmt.Errorf("Messages.listChatMessagesAll is not implemented")
+	return nil, NotImplementedError{Method: "Messages.listChatMessagesAll"}
 }
 
 func (s *MessagesServiceStub) GetMessage(ctx context.Context, id int32) (*Message, error) {
-	return nil, fmt.Errorf("Messages.getMessage is not implemented")
+	return nil, NotImplementedError{Method: "Messages.getMessage"}
 }
 
 func (s *MessagesServiceStub) CreateMessage(ctx context.Context, request MessageCreateRequest) (*Message, error) {
-	return nil, fmt.Errorf("Messages.createMessage is not implemented")
+	return nil, NotImplementedError{Method: "Messages.createMessage"}
 }
 
 func (s *MessagesServiceStub) PinMessage(ctx context.Context, id int32) error {
-	return fmt.Errorf("Messages.pinMessage is not implemented")
+	return NotImplementedError{Method: "Messages.pinMessage"}
 }
 
 func (s *MessagesServiceStub) UpdateMessage(ctx context.Context, id int32, request MessageUpdateRequest) (*Message, error) {
-	return nil, fmt.Errorf("Messages.updateMessage is not implemented")
+	return nil, NotImplementedError{Method: "Messages.updateMessage"}
 }
 
 func (s *MessagesServiceStub) DeleteMessage(ctx context.Context, id int32) error {
-	return fmt.Errorf("Messages.deleteMessage is not implemented")
+	return NotImplementedError{Method: "Messages.deleteMessage"}
 }
 
 func (s *MessagesServiceStub) UnpinMessage(ctx context.Context, id int32) error {
-	return fmt.Errorf("Messages.unpinMessage is not implemented")
+	return NotImplementedError{Method: "Messages.unpinMessage"}
 }
 
 type MessagesServiceImpl struct {
@@ -1629,7 +1602,7 @@ type LinkPreviewsService interface {
 type LinkPreviewsServiceStub struct{}
 
 func (s *LinkPreviewsServiceStub) CreateLinkPreviews(ctx context.Context, id int32, request LinkPreviewsRequest) error {
-	return fmt.Errorf("Link Previews.createLinkPreviews is not implemented")
+	return NotImplementedError{Method: "Link Previews.createLinkPreviews"}
 }
 
 type LinkPreviewsServiceImpl struct {
@@ -1676,19 +1649,19 @@ type ReactionsService interface {
 type ReactionsServiceStub struct{}
 
 func (s *ReactionsServiceStub) ListReactions(ctx context.Context, id int32, params *ListReactionsParams) (*ListReactionsResponse, error) {
-	return nil, fmt.Errorf("Reactions.listReactions is not implemented")
+	return nil, NotImplementedError{Method: "Reactions.listReactions"}
 }
 
 func (s *ReactionsServiceStub) ListReactionsAll(ctx context.Context, id int32, params *ListReactionsParams) ([]Reaction, error) {
-	return nil, fmt.Errorf("Reactions.listReactionsAll is not implemented")
+	return nil, NotImplementedError{Method: "Reactions.listReactionsAll"}
 }
 
 func (s *ReactionsServiceStub) AddReaction(ctx context.Context, id int32, request ReactionRequest) (*Reaction, error) {
-	return nil, fmt.Errorf("Reactions.addReaction is not implemented")
+	return nil, NotImplementedError{Method: "Reactions.addReaction"}
 }
 
 func (s *ReactionsServiceStub) RemoveReaction(ctx context.Context, id int32, params RemoveReactionParams) error {
-	return fmt.Errorf("Reactions.removeReaction is not implemented")
+	return NotImplementedError{Method: "Reactions.removeReaction"}
 }
 
 type ReactionsServiceImpl struct {
@@ -1830,7 +1803,7 @@ type ReadMembersService interface {
 type ReadMembersServiceStub struct{}
 
 func (s *ReadMembersServiceStub) ListReadMembers(ctx context.Context, id int32, params *ListReadMembersParams) (*any, error) {
-	return nil, fmt.Errorf("Read members.listReadMembers is not implemented")
+	return nil, NotImplementedError{Method: "Read members.listReadMembers"}
 }
 
 type ReadMembersServiceImpl struct {
@@ -1886,11 +1859,11 @@ type ThreadsService interface {
 type ThreadsServiceStub struct{}
 
 func (s *ThreadsServiceStub) GetThread(ctx context.Context, id int32) (*Thread, error) {
-	return nil, fmt.Errorf("Threads.getThread is not implemented")
+	return nil, NotImplementedError{Method: "Threads.getThread"}
 }
 
 func (s *ThreadsServiceStub) CreateThread(ctx context.Context, id int32) (*Thread, error) {
-	return nil, fmt.Errorf("Threads.createThread is not implemented")
+	return nil, NotImplementedError{Method: "Threads.createThread"}
 }
 
 type ThreadsServiceImpl struct {
@@ -1969,23 +1942,23 @@ type ProfileService interface {
 type ProfileServiceStub struct{}
 
 func (s *ProfileServiceStub) GetTokenInfo(ctx context.Context) (*AccessTokenInfo, error) {
-	return nil, fmt.Errorf("Profile.getTokenInfo is not implemented")
+	return nil, NotImplementedError{Method: "Profile.getTokenInfo"}
 }
 
 func (s *ProfileServiceStub) GetProfile(ctx context.Context) (*User, error) {
-	return nil, fmt.Errorf("Profile.getProfile is not implemented")
+	return nil, NotImplementedError{Method: "Profile.getProfile"}
 }
 
 func (s *ProfileServiceStub) GetStatus(ctx context.Context) (*any, error) {
-	return nil, fmt.Errorf("Profile.getStatus is not implemented")
+	return nil, NotImplementedError{Method: "Profile.getStatus"}
 }
 
 func (s *ProfileServiceStub) UpdateStatus(ctx context.Context, request StatusUpdateRequest) (*UserStatus, error) {
-	return nil, fmt.Errorf("Profile.updateStatus is not implemented")
+	return nil, NotImplementedError{Method: "Profile.updateStatus"}
 }
 
 func (s *ProfileServiceStub) DeleteStatus(ctx context.Context) error {
-	return fmt.Errorf("Profile.deleteStatus is not implemented")
+	return NotImplementedError{Method: "Profile.deleteStatus"}
 }
 
 type ProfileServiceImpl struct {
@@ -2152,27 +2125,27 @@ type SearchService interface {
 type SearchServiceStub struct{}
 
 func (s *SearchServiceStub) SearchChats(ctx context.Context, params *SearchChatsParams) (*ListChatsResponse, error) {
-	return nil, fmt.Errorf("Search.searchChats is not implemented")
+	return nil, NotImplementedError{Method: "Search.searchChats"}
 }
 
 func (s *SearchServiceStub) SearchChatsAll(ctx context.Context, params *SearchChatsParams) ([]Chat, error) {
-	return nil, fmt.Errorf("Search.searchChatsAll is not implemented")
+	return nil, NotImplementedError{Method: "Search.searchChatsAll"}
 }
 
 func (s *SearchServiceStub) SearchMessages(ctx context.Context, params *SearchMessagesParams) (*ListChatMessagesResponse, error) {
-	return nil, fmt.Errorf("Search.searchMessages is not implemented")
+	return nil, NotImplementedError{Method: "Search.searchMessages"}
 }
 
 func (s *SearchServiceStub) SearchMessagesAll(ctx context.Context, params *SearchMessagesParams) ([]Message, error) {
-	return nil, fmt.Errorf("Search.searchMessagesAll is not implemented")
+	return nil, NotImplementedError{Method: "Search.searchMessagesAll"}
 }
 
 func (s *SearchServiceStub) SearchUsers(ctx context.Context, params *SearchUsersParams) (*ListMembersResponse, error) {
-	return nil, fmt.Errorf("Search.searchUsers is not implemented")
+	return nil, NotImplementedError{Method: "Search.searchUsers"}
 }
 
 func (s *SearchServiceStub) SearchUsersAll(ctx context.Context, params *SearchUsersParams) ([]User, error) {
-	return nil, fmt.Errorf("Search.searchUsersAll is not implemented")
+	return nil, NotImplementedError{Method: "Search.searchUsersAll"}
 }
 
 type SearchServiceImpl struct {
@@ -2432,27 +2405,27 @@ type TasksService interface {
 type TasksServiceStub struct{}
 
 func (s *TasksServiceStub) ListTasks(ctx context.Context, params *ListTasksParams) (*ListTasksResponse, error) {
-	return nil, fmt.Errorf("Tasks.listTasks is not implemented")
+	return nil, NotImplementedError{Method: "Tasks.listTasks"}
 }
 
 func (s *TasksServiceStub) ListTasksAll(ctx context.Context, params *ListTasksParams) ([]Task, error) {
-	return nil, fmt.Errorf("Tasks.listTasksAll is not implemented")
+	return nil, NotImplementedError{Method: "Tasks.listTasksAll"}
 }
 
 func (s *TasksServiceStub) GetTask(ctx context.Context, id int32) (*Task, error) {
-	return nil, fmt.Errorf("Tasks.getTask is not implemented")
+	return nil, NotImplementedError{Method: "Tasks.getTask"}
 }
 
 func (s *TasksServiceStub) CreateTask(ctx context.Context, request TaskCreateRequest) (*Task, error) {
-	return nil, fmt.Errorf("Tasks.createTask is not implemented")
+	return nil, NotImplementedError{Method: "Tasks.createTask"}
 }
 
 func (s *TasksServiceStub) UpdateTask(ctx context.Context, id int32, request TaskUpdateRequest) (*Task, error) {
-	return nil, fmt.Errorf("Tasks.updateTask is not implemented")
+	return nil, NotImplementedError{Method: "Tasks.updateTask"}
 }
 
 func (s *TasksServiceStub) DeleteTask(ctx context.Context, id int32) error {
-	return fmt.Errorf("Tasks.deleteTask is not implemented")
+	return NotImplementedError{Method: "Tasks.deleteTask"}
 }
 
 type TasksServiceImpl struct {
@@ -2659,39 +2632,39 @@ type UsersService interface {
 type UsersServiceStub struct{}
 
 func (s *UsersServiceStub) ListUsers(ctx context.Context, params *ListUsersParams) (*ListMembersResponse, error) {
-	return nil, fmt.Errorf("Users.listUsers is not implemented")
+	return nil, NotImplementedError{Method: "Users.listUsers"}
 }
 
 func (s *UsersServiceStub) ListUsersAll(ctx context.Context, params *ListUsersParams) ([]User, error) {
-	return nil, fmt.Errorf("Users.listUsersAll is not implemented")
+	return nil, NotImplementedError{Method: "Users.listUsersAll"}
 }
 
 func (s *UsersServiceStub) GetUser(ctx context.Context, id int32) (*User, error) {
-	return nil, fmt.Errorf("Users.getUser is not implemented")
+	return nil, NotImplementedError{Method: "Users.getUser"}
 }
 
 func (s *UsersServiceStub) GetUserStatus(ctx context.Context, userId int32) (*any, error) {
-	return nil, fmt.Errorf("Users.getUserStatus is not implemented")
+	return nil, NotImplementedError{Method: "Users.getUserStatus"}
 }
 
 func (s *UsersServiceStub) CreateUser(ctx context.Context, request UserCreateRequest) (*User, error) {
-	return nil, fmt.Errorf("Users.createUser is not implemented")
+	return nil, NotImplementedError{Method: "Users.createUser"}
 }
 
 func (s *UsersServiceStub) UpdateUser(ctx context.Context, id int32, request UserUpdateRequest) (*User, error) {
-	return nil, fmt.Errorf("Users.updateUser is not implemented")
+	return nil, NotImplementedError{Method: "Users.updateUser"}
 }
 
 func (s *UsersServiceStub) UpdateUserStatus(ctx context.Context, userId int32, request StatusUpdateRequest) (*UserStatus, error) {
-	return nil, fmt.Errorf("Users.updateUserStatus is not implemented")
+	return nil, NotImplementedError{Method: "Users.updateUserStatus"}
 }
 
 func (s *UsersServiceStub) DeleteUser(ctx context.Context, id int32) error {
-	return fmt.Errorf("Users.deleteUser is not implemented")
+	return NotImplementedError{Method: "Users.deleteUser"}
 }
 
 func (s *UsersServiceStub) DeleteUserStatus(ctx context.Context, userId int32) error {
-	return fmt.Errorf("Users.deleteUserStatus is not implemented")
+	return NotImplementedError{Method: "Users.deleteUserStatus"}
 }
 
 type UsersServiceImpl struct {
@@ -2980,7 +2953,7 @@ type ViewsService interface {
 type ViewsServiceStub struct{}
 
 func (s *ViewsServiceStub) OpenView(ctx context.Context, request OpenViewRequest) error {
-	return fmt.Errorf("Views.openView is not implemented")
+	return NotImplementedError{Method: "Views.openView"}
 }
 
 type ViewsServiceImpl struct {
